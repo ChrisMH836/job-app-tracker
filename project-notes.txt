@@ -1,0 +1,14 @@
+initial setup
+    1. download
+        - express
+        - nodemon
+        - typescript
+        - ts-node
+        - @types/node
+        - @types/express
+    2. setup nodemon script
+    3. generate ts config file
+        - npx tsc --init
+    4. begin file structure
+        - src/
+            server.js
