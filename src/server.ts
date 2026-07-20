@@ -1,10 +1,14 @@
 import express from 'express';
 import type { Express, Request, Response } from 'express';
-
+import { config } from 'dotenv';
 //router
 import testRouter from './routers/testRouter.ts';
+import { connectDB } from './config/db.ts';
 
-// setting up express object
+//configure .env vars and connect database
+config();
+connectDB();
+// create express object
 const app: Express = express();
 app.use(express.json());
 
@@ -20,3 +24,5 @@ const PORT: number = 5001;
 const server = app.listen(PORT, () => {
   console.log(`port activated at: ${PORT}`);
 });
+
+//handle server crashes

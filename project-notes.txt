@@ -9,6 +9,11 @@ initial setup
     2. setup nodemon script
     3. generate ts config file
         - npx tsc --init
+        - in tsconfig, add
+            "allowImportingTsExtensions": true,
+            "noEmit": true
     4. begin file structure
-        - src/
-            server.js
+prisma setup
+    1. npx Prismaa init
+        - sets up prisma files
+    2. install prisma and prisma client
