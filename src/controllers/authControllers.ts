@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/db';
 import bcrypt from 'bcrypt';
+import { generateToken } from '../utils/generatetoken';
 
 const register = async (req: Request, res: Response) => {
   //destructure body
@@ -39,4 +40,57 @@ const register = async (req: Request, res: Response) => {
   });
 };
 
-export default register;
+const login = async (req: Request, res: Response) => {
+  // destructure body
+  const { email, password } = req.body;
+
+  //check if email exists in db
+  const user = await prisma.user.findUnique({
+    where: {
+      email: email,
+    },
+  });
+  if (!user) {
+    return res.status(401).json({
+      error: 'invalid username or password',
+    });
+  }
+  //check if password hashes are the same
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    return res.status(401).json({
+      error: 'invalid username or password',
+    });
+  }
+  //generate jwt token
+  const token = generateToken(user.id, res);
+  //send response and token as cookie
+  res.cookie('jwt', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  });
+  res.json({
+    status: 'Success',
+    data: {
+      user: {
+        email,
+        name: user.name,
+      },
+    },
+  });
+};
+const logout = async (req: Request, res: Response) => {
+  {
+    res.cookie('jwt', '', {
+      httpOnly: true,
+      expires: new Date(0),
+    });
+    res.status(200).json({
+      status: 'success',
+      message: 'logged out successfully',
+    });
+  }
+};
+export { register, login, logout };
