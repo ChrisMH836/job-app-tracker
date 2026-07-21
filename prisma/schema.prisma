@@ -11,3 +11,44 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  password String
+  createdAt DateTime @default(now())
+
+  jobItems JobItem[]
+}
+model JobItem {
+  id String @id @default(uuid())
+  company String 
+  title String
+  deadline DateTime?
+  notes String?
+  status JobStatus?
+  userId String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  offer Offer?
+}
+model Offer {
+  id String @id @default(uuid())
+  startDate DateTime?
+  endDate DateTime?
+  jobItemId String @unique
+  createdAt DateTime @default(now())
+
+  jobItem   JobItem   @relation(fields: [jobItemId], references: [id], onDelete: Cascade)
+}
+
+enum JobStatus {
+  SAVED
+  APPLIED
+  INTERVIEW
+  OFFER
+  REJECTED
+  WITHDRAWN
+}
