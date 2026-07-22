@@ -2,16 +2,21 @@ import { config } from 'dotenv';
 import type { Express, Request, Response } from 'express';
 import express from 'express';
 import { connectDB, disconnectDB } from './config/db';
+
+// import routers
 import authRoutes from './routes/authRoutes';
+import jobItemRoutes from './routes/jobItemRoutes';
 
 config();
 connectDB();
 const app: Express = express();
 
-//middlewares
+//use middlewares
 app.use(express.json());
 
+//use routers
 app.use('/auth', authRoutes);
+app.use('/job', jobItemRoutes);
 
 const PORT: number = 5001;
 
