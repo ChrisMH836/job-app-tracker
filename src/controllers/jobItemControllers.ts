@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/db';
 import { lastJobItemOrder } from '../utils/dataUtils';
+import { Prisma } from '../../generated/prisma';
 
 const createJobItem = async (req: Request, res: Response) => {
   //destructure body
@@ -58,4 +59,39 @@ const removeJobItem = async (req: Request, res: Response) => {
   });
 };
 
-export { createJobItem, removeJobItem };
+const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
+  //destructure body
+  const { columnId, company, title, deadline, notes } = req.body;
+
+  //get jobItem with id param
+  const jobItem = await prisma.jobItem.findUnique({
+    where: {
+      id: req.params.id,
+    },
+  });
+  //check if jobItem exists
+  if (!jobItem) {
+    return res.status(404).json({
+      error: 'job item not found',
+    });
+  }
+  // edit job item
+  const updateData: Prisma.JobItemUpdateInput = {};
+  if (columnId != undefined) updateData.column = { connect: { id: columnId } };
+  if (company != undefined) updateData.company = company;
+  if (title != undefined) updateData.title = title;
+  if (deadline != undefined) updateData.deadline = deadline;
+  if (notes != undefined) updateData.notes = notes;
+
+  const updatedJobItem = await prisma.jobItem.update({
+    where: { id: req.params.id },
+    data: updateData,
+  });
+  //return response
+  res.status(201).json({
+    status: 'Success',
+    data: updatedJobItem,
+  });
+};
+
+export { createJobItem, removeJobItem, updateJobItem };
