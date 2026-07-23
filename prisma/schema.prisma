@@ -18,7 +18,23 @@ model User {
   email String @unique
   password String
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  columns Column[]
+}
+
+model Column {
+  id String @id @default(uuid())
+  name String @default("Untitled")
+  jobCount Int 
+  order Int
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([userId, order])
+
+   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   jobItems JobItem[]
 }
 model JobItem {
@@ -28,11 +44,15 @@ model JobItem {
   deadline DateTime?
   notes String?
   status JobStatus?
-  userId String
-  createdAt DateTime @default(now())
+  order Int
+  columnId String
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([columnId, order])
+
   offer Offer?
+  column Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
 }
 model Offer {
   id String @id @default(uuid())
@@ -40,6 +60,7 @@ model Offer {
   endDate DateTime?
   jobItemId String @unique
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   jobItem   JobItem   @relation(fields: [jobItemId], references: [id], onDelete: Cascade)
 }

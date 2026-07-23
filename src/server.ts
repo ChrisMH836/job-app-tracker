@@ -6,6 +6,7 @@ import { connectDB, disconnectDB } from './config/db';
 // import routers
 import authRoutes from './routes/authRoutes';
 import jobItemRoutes from './routes/jobItemRoutes';
+import columnRoutes from './routes/columnRoutes';
 
 config();
 connectDB();
@@ -17,6 +18,7 @@ app.use(express.json());
 //use routers
 app.use('/auth', authRoutes);
 app.use('/job', jobItemRoutes);
+app.use('/column', columnRoutes);
 
 const PORT: number = 5001;
 
