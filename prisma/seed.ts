@@ -1,12 +1,12 @@
 import { prisma } from '../src/config/db';
 import { lastColumnOrder, lastJobItemOrder } from '../src/utils/dataUtils';
 import { JobStatus } from '../generated/prisma';
-
+import bcrypt from 'bcrypt';
 const testUsers = [
   {
     name: 'Chris',
     email: 'Chris@test.com',
-    password: 'Chris_password',
+    password: '123',
     columns: [
       {
         name: 'Incomplete',
@@ -225,11 +225,12 @@ async function main() {
   console.log(`successfully deleted ${deleteCount.count} users`);
   console.log('begin seeding Data');
   for (const userData of testUsers) {
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
     const user = await prisma.user.create({
       data: {
         name: userData.name,
         email: userData.email,
-        password: userData.password,
+        password: hashedPassword,
       },
     });
     for (const columnData of userData.columns) {

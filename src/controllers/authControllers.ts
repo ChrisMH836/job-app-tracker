@@ -50,15 +50,16 @@ const login = async (req: Request, res: Response) => {
       email: email,
     },
   });
+
   if (!user) {
-    return res.status(401).json({
+    return res.status(402).json({
       error: 'invalid username or password',
     });
   }
   //check if password hashes are the same
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
-    return res.status(401).json({
+    return res.status(403).json({
       error: 'invalid username or password',
     });
   }
@@ -77,6 +78,7 @@ const login = async (req: Request, res: Response) => {
       user: {
         email,
         name: user.name,
+        token,
       },
     },
   });

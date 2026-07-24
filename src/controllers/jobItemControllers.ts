@@ -8,16 +8,21 @@ const createJobItem = async (req: Request, res: Response) => {
   const { columnId, company, title, deadline, notes } = req.body;
 
   //check if column exists
-  const columnExists = await prisma.column.findUnique({
+  const column = await prisma.column.findUnique({
     where: { id: columnId },
   });
 
-  if (!columnExists) {
+  if (!column) {
     return res.status(404).json({
       error: 'column not found',
     });
   }
-
+  //check if user is authorized
+  if (column.userId !== req.user.id) {
+    return res.status(401).json({
+      error: 'Not authorized: invalid user',
+    });
+  }
   //create order
   const newOrder = await lastJobItemOrder(columnId);
   //create jobItem
