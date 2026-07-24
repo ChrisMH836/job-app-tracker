@@ -2,10 +2,12 @@ import { Request, Response } from 'express';
 import { prisma } from '../config/db';
 import { lastJobItemOrder } from '../utils/dataUtils';
 import { Prisma } from '../../generated/prisma';
+import z from 'zod';
+import {createJobItemSchema} from '../validators/jobItemValidators'
 
-const createJobItem = async (req: Request, res: Response) => {
+const createJobItem = async (req: Request<{}, {}, z.infer<typeof createJobItemSchema>, res: Response) => {
   //destructure body
-  const { columnId, company, title, deadline, notes } = req.body;
+  const { columnId, company, title, deadline, notes, status } = req.body;
 
   //check if column exists
   const column = await prisma.column.findUnique({
@@ -33,6 +35,7 @@ const createJobItem = async (req: Request, res: Response) => {
       title,
       deadline,
       notes,
+      status,
       order: newOrder,
     },
   });

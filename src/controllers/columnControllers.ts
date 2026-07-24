@@ -66,7 +66,7 @@ const removeColumn = async (req: Request<{ id: string }>, res: Response) => {
 
 const updateColumn = async (req: Request<{ id: string }>, res: Response) => {
   //destructure body
-  const { userId, name } = req.body;
+  const { name } = req.body;
 
   //get Column with id param
   const column = await prisma.column.findUnique({
@@ -88,7 +88,8 @@ const updateColumn = async (req: Request<{ id: string }>, res: Response) => {
   }
   // edit job item
   const updateData: Prisma.ColumnUpdateInput = {};
-  if (userId != undefined) updateData.user = { connect: { id: userId } };
+  if (req.user.id != undefined)
+    updateData.user = { connect: { id: req.user.id } };
   if (name != undefined) updateData.name = name;
 
   const updatedColumn = await prisma.column.update({
