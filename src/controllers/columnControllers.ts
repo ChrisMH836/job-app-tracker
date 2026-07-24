@@ -4,8 +4,16 @@ import { lastColumnOrder } from '../utils/dataUtils';
 import { Prisma } from '../../generated/prisma';
 
 const createColumn = async (req: Request, res: Response) => {
+  // confirm that auth middleware inserted user
+  if (!req.user) {
+    return res.status(500).json({
+      error: 'internal error: user not found',
+    });
+  }
+
   const { name } = req.body;
   //  check if user exists
+
   const userExists = await prisma.user.findUnique({
     where: { id: req.user.id },
   });
@@ -34,6 +42,12 @@ const createColumn = async (req: Request, res: Response) => {
 };
 
 const removeColumn = async (req: Request<{ id: string }>, res: Response) => {
+  // confirm that auth middleware inserted user
+  if (!req.user) {
+    return res.status(500).json({
+      error: 'internal error: user not found',
+    });
+  }
   // get column from id param
   const column = await prisma.column.findUnique({
     where: {
@@ -47,7 +61,6 @@ const removeColumn = async (req: Request<{ id: string }>, res: Response) => {
     });
   }
   //check if user is authorized
-
   if (column.userId !== req.user.id) {
     return res.status(401).json({
       error: 'Not authorized: invalid user',
@@ -65,6 +78,12 @@ const removeColumn = async (req: Request<{ id: string }>, res: Response) => {
 };
 
 const updateColumn = async (req: Request<{ id: string }>, res: Response) => {
+  // confirm that auth middleware inserted user
+  if (!req.user) {
+    return res.status(500).json({
+      error: 'internal error: user not found',
+    });
+  }
   //destructure body
   const { name } = req.body;
 

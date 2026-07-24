@@ -9,6 +9,12 @@ const createJobItem = async (
   req: Request<{}, {}, z.infer<typeof createJobItemSchema>>,
   res: Response,
 ) => {
+  // confirm that auth middleware inserted user
+  if (!req.user) {
+    return res.status(500).json({
+      error: 'internal error: user not found',
+    });
+  }
   //destructure body
   const { columnId, company, title, deadline, notes, status } = req.body;
 
