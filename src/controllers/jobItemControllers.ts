@@ -3,9 +3,12 @@ import { prisma } from '../config/db';
 import { lastJobItemOrder } from '../utils/dataUtils';
 import { Prisma } from '../../generated/prisma';
 import z from 'zod';
-import {createJobItemSchema} from '../validators/jobItemValidators'
+import { createJobItemSchema } from '../validators/jobItemValidators';
 
-const createJobItem = async (req: Request<{}, {}, z.infer<typeof createJobItemSchema>, res: Response) => {
+const createJobItem = async (
+  req: Request<{}, {}, z.infer<typeof createJobItemSchema>>,
+  res: Response,
+) => {
   //destructure body
   const { columnId, company, title, deadline, notes, status } = req.body;
 
@@ -43,11 +46,11 @@ const createJobItem = async (req: Request<{}, {}, z.infer<typeof createJobItemSc
   res.status(201).json({ status: 'success', data: jobItem });
 };
 
-const removeJobItem = async (req: Request, res: Response) => {
+const removeJobItem = async (req: Request<{ id: string }>, res: Response) => {
   // get jobItem from id param
   const jobItem = await prisma.jobItem.findUnique({
     where: {
-      id: req.params.id as string,
+      id: req.params.id,
     },
   });
   //check if jobItem exists
@@ -58,7 +61,7 @@ const removeJobItem = async (req: Request, res: Response) => {
   }
   //delete jobItem
   const deletedJobItem = await prisma.jobItem.delete({
-    where: { id: req.params.id as string },
+    where: { id: req.params.id },
   });
   //send response
   res.status(201).json({

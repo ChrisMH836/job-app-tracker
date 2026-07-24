@@ -10,3 +10,5 @@ export const loginSchema = z.object({
   email: z.string('email must be a string'),
   password: z.string('password must be a string'),
 });
+
+export const logoutSchema = z.object({}).strict();

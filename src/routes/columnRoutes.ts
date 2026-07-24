@@ -6,12 +6,16 @@ import {
 } from '../controllers/columnControllers';
 import { authMiddleware } from '../middlewares/authMiddleware';
 import { validateRequest } from '../middlewares/validateRequest';
-import { createColumnSchema } from '../validators/columnValidators';
+import {
+  createColumnSchema,
+  removeColumnSchema,
+  updateColumnSchema,
+} from '../validators/columnValidators';
 
 const router = express.Router();
 router.use(authMiddleware);
 router.post('/', validateRequest(createColumnSchema), createColumn);
-router.delete('/:id', removeColumn);
-router.put('/:id', updateColumn);
+router.delete('/:id', validateRequest(removeColumnSchema), removeColumn);
+router.put('/:id', validateRequest(updateColumnSchema), updateColumn);
 
 export default router;

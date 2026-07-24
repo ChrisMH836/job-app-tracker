@@ -39,11 +39,11 @@ model Column {
 }
 model JobItem {
   id String @id @default(uuid())
-  company String 
-  title String
+  company String? 
+  title String?
   deadline DateTime?
   notes String?
-  status JobStatus?
+  status JobStatus @default(SAVED)
   order Int
   columnId String
 
