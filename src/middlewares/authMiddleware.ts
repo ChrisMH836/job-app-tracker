@@ -36,7 +36,7 @@ export const authMiddleware = async (
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET) as DecodedToken;
-
+    console.log(decoded.id);
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
     });
@@ -45,6 +45,7 @@ export const authMiddleware = async (
     }
     //return userId
     req.user = user;
+    console.log('auth middleware ended');
     next();
   } catch (error) {
     // Catches TokenExpiredError or JsonWebTokenError from jwt.verify()

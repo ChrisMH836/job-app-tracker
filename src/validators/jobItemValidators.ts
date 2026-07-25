@@ -17,6 +17,7 @@ export const createJobItemSchema = z.object({
   deadline: z.coerce.date().optional().nullable(),
   notes: z.string().optional().nullable(),
   status: jobStatusSchema.default('SAVED'),
+  order: z.coerce.number().int().optional(),
 });
-export const removeJobItemSchema = z.object({}).strict();
+export const removeJobItemSchema = z.object({});
 export const updateJobItemSchema = createJobItemSchema.partial();

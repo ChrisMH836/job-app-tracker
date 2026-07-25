@@ -3,6 +3,7 @@ import { ZodType, z } from 'zod';
 
 export const validateRequest = (schema: ZodType) => {
   return (req: Request, res: Response, next: NextFunction) => {
+    console.log('reached validate request');
     //check if request has proper types
     const result = schema.safeParse(req.body);
 
@@ -13,9 +14,11 @@ export const validateRequest = (schema: ZodType) => {
 
       const errorMessages = Object.values(flattened.fieldErrors).flat();
       return res.status(400).json({
-        message: errorMessages.join(', '),
+        error: errorMessages.join(', '),
       });
     }
+    console.log('end of validate request');
+
     next();
   };
 };

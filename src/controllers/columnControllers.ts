@@ -2,16 +2,18 @@ import { Request, Response } from 'express';
 import { prisma } from '../config/db';
 import { lastColumnOrder } from '../utils/dataUtils';
 import { Prisma } from '../../generated/prisma';
+import { reorderColumns } from '../utils/columnUtils';
 
 const createColumn = async (req: Request, res: Response) => {
   // confirm that auth middleware inserted user
-  if (!req.user) {
+  if (!req.user?.id) {
     return res.status(500).json({
       error: 'internal error: user not found',
     });
   }
-
-  const { name } = req.body;
+  //destructure request
+  const userId = req.user.id;
+  const { name, order } = req.body;
   //  check if user exists
 
   const userExists = await prisma.user.findUnique({
@@ -23,21 +25,31 @@ const createColumn = async (req: Request, res: Response) => {
       error: 'user not found',
     });
   }
-  //calculate order
-  const newOrder = await lastColumnOrder(req.user.id);
-  //  create column
-  const column = await prisma.column.create({
-    data: {
-      name,
-      userId: req.user.id,
-      order: newOrder,
-      jobCount: 0,
-    },
+  //find order of last column
+  const greatestOrder = await lastColumnOrder(userId);
+  //calculate order of new column
+  const targetOrder =
+    order && order <= greatestOrder + 1 ? order : greatestOrder + 1;
+  const result = await prisma.$transaction(async (tx) => {
+    if (targetOrder !== greatestOrder + 1) {
+      await reorderColumns({ targetOrder, userId, tx }, 'CREATE');
+    }
+    //  create column
+    const column = await tx.column.create({
+      data: {
+        name,
+        userId: userId,
+        order: targetOrder,
+        jobCount: 0,
+      },
+    });
+    return column;
   });
+
   //return response
   res.status(201).json({
     status: 'success',
-    data: column,
+    data: result,
   });
 };
 

@@ -15,7 +15,7 @@ import {
 const router = express.Router();
 router.use(authMiddleware);
 router.post('/', validateRequest(createJobItemSchema), createJobItem);
-router.delete('/:id', validateRequest(removeJobItemSchema), removeJobItem);
+router.delete('/:id', removeJobItem);
 router.put('/:id', validateRequest(updateJobItemSchema), updateJobItem);
 
 export default router;

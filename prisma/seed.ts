@@ -253,7 +253,7 @@ async function main() {
             deadline: jobItemData.deadline,
             notes: jobItemData.notes,
             status: jobItemData.status as JobStatus,
-            order: jobOrder,
+            order: jobOrder + 1,
           },
         });
         console.log(
