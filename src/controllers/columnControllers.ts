@@ -3,6 +3,7 @@ import { prisma } from '../config/db';
 import { lastColumnOrder } from '../utils/dataUtils';
 import { Prisma } from '../../generated/prisma';
 import { reorderColumns } from '../utils/columnUtils';
+import { Action } from '../utils/types';
 
 const createColumn = async (req: Request, res: Response) => {
   // confirm that auth middleware inserted user
@@ -69,35 +70,49 @@ const removeColumn = async (req: Request<{ id: string }>, res: Response) => {
   //check if column exists
   if (!column) {
     return res.status(404).json({
-      error: 'job item not found',
+      error: 'columns not found',
     });
   }
   //check if user is authorized
   if (column.userId !== req.user.id) {
-    return res.status(401).json({
+    return res.status(403).json({
       error: 'Not authorized: invalid user',
     });
   }
-  //delete column
-  const deletedColumn = await prisma.column.delete({
-    where: { id: req.params.id },
+  const result = await prisma.$transaction(async (tx) => {
+    //delete jobItem
+    const deletedColumn = await tx.column.delete({
+      where: { id: req.params.id },
+    });
+    //adjust items with affected orders
+    await reorderColumns(
+      {
+        targetOrder: deletedColumn.order,
+        userId: deletedColumn.userId,
+        tx,
+      },
+      'REMOVE',
+    );
+
+    return deletedColumn;
   });
   //send response
   res.status(201).json({
     status: 'Success',
-    data: deletedColumn,
+    data: result,
   });
 };
 
 const updateColumn = async (req: Request<{ id: string }>, res: Response) => {
   // confirm that auth middleware inserted user
-  if (!req.user) {
+  if (!req.user?.id) {
     return res.status(500).json({
       error: 'internal error: user not found',
     });
   }
+  const userId = req.user.id;
   //destructure body
-  const { name } = req.body;
+  const { name, order } = req.body;
 
   //get Column with id param
   const column = await prisma.column.findUnique({
@@ -113,24 +128,49 @@ const updateColumn = async (req: Request<{ id: string }>, res: Response) => {
   }
   //check if user is authorized
   if (column.userId !== req.user.id) {
-    return res.status(401).json({
+    return res.status(403).json({
       error: 'Not authorized: invalid user',
     });
   }
   // edit job item
-  const updateData: Prisma.ColumnUpdateInput = {};
-  if (req.user.id != undefined)
-    updateData.user = { connect: { id: req.user.id } };
-  if (name != undefined) updateData.name = name;
+  const result = await prisma.$transaction(async (tx) => {
+    //check if order is updarted
+    if (order !== undefined && order !== column.order) {
+      //set order to 'safe' negative value
+      await tx.column.update({
+        where: { id: column.id },
+        data: { order: -1 },
+      });
+      //reorder affected jobItems
+      const action: Action = order > column.order ? 'INCREASE' : 'DECREASE';
+      await reorderColumns(
+        {
+          originalOrder: column.order,
+          targetOrder: order,
+          userId: column.userId,
+          tx,
+        },
+        action,
+      );
+    }
+    // edit column
+    const updateData: Prisma.ColumnUpdateInput = {};
+    if (userId !== undefined) updateData.user = { connect: { id: userId } };
+    if (name !== undefined) updateData.name = name;
+    if (order !== undefined && order !== column.order) updateData.order = order;
 
-  const updatedColumn = await prisma.column.update({
-    where: { id: req.params.id },
-    data: updateData,
+    const updatedColumn = await tx.column.update({
+      where: { id: req.params.id },
+      data: updateData,
+    });
+    //update jobCount
+    return updatedColumn;
   });
+
   //return response
   res.status(201).json({
     status: 'Success',
-    data: updatedColumn,
+    data: result,
   });
 };
 export { createColumn, removeColumn, updateColumn };

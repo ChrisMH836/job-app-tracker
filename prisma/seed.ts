@@ -1,6 +1,7 @@
 import { prisma } from '../src/config/db';
 import { lastColumnOrder, lastJobItemOrder } from '../src/utils/dataUtils';
 import { JobStatus } from '../generated/prisma';
+import { updateJobCount } from '../src/utils/columnUtils';
 import bcrypt from 'bcrypt';
 const testUsers = [
   {
@@ -234,7 +235,7 @@ async function main() {
       },
     });
     for (const columnData of userData.columns) {
-      const columnOrder = await lastColumnOrder(user.id);
+      const columnOrder = (await lastColumnOrder(user.id)) + 1;
       const column = await prisma.column.create({
         data: {
           name: columnData.name,
@@ -256,6 +257,12 @@ async function main() {
             order: jobOrder + 1,
           },
         });
+        //update jobCount
+        await prisma.$transaction(async (tx) => {
+          const count = await updateJobCount(column.id, tx);
+          console.log(`-  UPDATED JOB COUNT: ${count}`);
+        });
+
         console.log(
           `-        succesfully added jobItem: ${jobItem.company} - ${jobItem.title}`,
         );

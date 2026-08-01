@@ -51,10 +51,6 @@ export const reorderJobItems = async (
           where: { id: item.id },
           data: { order: item.order - 1 },
         });
-        const updatedItems: JobItem[] = await tx.jobItem.findMany({
-          where: { columnId },
-          orderBy: { order: 'asc' },
-        });
       }
       break;
     }

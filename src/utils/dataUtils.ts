@@ -17,5 +17,5 @@ export const lastColumnOrder = async (userId: string) => {
       order: 'desc',
     },
   });
-  return lastColumn ? lastColumn.order + 1 : 0;
+  return lastColumn ? lastColumn.order : 0;
 };

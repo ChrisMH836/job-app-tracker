@@ -6,6 +6,7 @@ import z from 'zod';
 import { createJobItemSchema } from '../validators/jobItemValidators';
 import { reorderJobItems } from '../utils/jobItemUtils';
 import { Action } from '../utils/types';
+import { updateJobCount } from '../utils/columnUtils';
 
 const createJobItem = async (
   req: Request<{}, {}, z.infer<typeof createJobItemSchema>>,
@@ -59,6 +60,8 @@ const createJobItem = async (
         order: targetOrder,
       },
     });
+    //update jobCount
+    await updateJobCount(columnId, tx);
     return jobItem;
   });
   //send response
@@ -83,9 +86,10 @@ const removeJobItem = async (req: Request<{ id: string }>, res: Response) => {
       error: 'job item not found',
     });
   }
+  const columnId = jobItem.column.id;
   //check if user is authorized
   if (jobItem.column.userId !== req.user.id) {
-    return res.status(401).json({
+    return res.status(403).json({
       error: 'Not authorized: invalid user',
     });
   }
@@ -98,12 +102,13 @@ const removeJobItem = async (req: Request<{ id: string }>, res: Response) => {
     await reorderJobItems(
       {
         targetOrder: deletedJobItem.order,
-        columnId: deletedJobItem.columnId,
+        columnId: columnId,
         tx,
       },
       'REMOVE',
     );
-
+    //update jobCount
+    await updateJobCount(columnId, tx);
     return deletedJobItem;
   });
 
@@ -115,6 +120,12 @@ const removeJobItem = async (req: Request<{ id: string }>, res: Response) => {
 };
 
 const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
+  // confirm that auth middleware inserted user
+  if (!req.user) {
+    return res.status(500).json({
+      error: 'internal error: user not found',
+    });
+  }
   //destructure body
   const { columnId, company, title, deadline, notes, order } = req.body;
 
@@ -123,6 +134,7 @@ const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
     where: {
       id: req.params.id,
     },
+    include: { column: true },
   });
   //check if jobItem exists
   if (!jobItem) {
@@ -130,8 +142,14 @@ const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
       error: 'job item not found',
     });
   }
-  //see if order changes
+  //check if user is authorized
+  if (jobItem.column.userId !== req.user.id) {
+    return res.status(403).json({
+      error: 'Not authorized: invalid user',
+    });
+  }
   const result = await prisma.$transaction(async (tx) => {
+    //check if order is updarted
     if (order !== undefined && order !== jobItem.order) {
       //set order to 'safe' negative value
       await tx.jobItem.update({
@@ -151,9 +169,15 @@ const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
       );
     }
     // edit job item
+
+    //determine if moving to different column
+    let changingColumn: boolean = false;
     const updateData: Prisma.JobItemUpdateInput = {};
-    if (columnId != undefined)
+    if (columnId != undefined && columnId !== jobItem.columnId) {
       updateData.column = { connect: { id: columnId } };
+      changingColumn = true;
+    }
+
     if (company != undefined) updateData.company = company;
     if (title != undefined) updateData.title = title;
     if (deadline != undefined) updateData.deadline = deadline;
@@ -161,10 +185,17 @@ const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
     console.log(`ORDER: ${order}`);
     if (order != undefined) updateData.order = order;
 
+    //update jobItems
     const updatedJobItem = await tx.jobItem.update({
       where: { id: req.params.id },
       data: updateData,
     });
+    //update jobCounts
+    if (changingColumn) {
+      await updateJobCount(columnId, tx);
+      await updateJobCount(jobItem.columnId, tx);
+    }
+
     return updatedJobItem;
   });
 
