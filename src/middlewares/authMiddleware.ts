@@ -41,7 +41,7 @@ export const authMiddleware = async (
       where: { id: decoded.id },
     });
     if (!user) {
-      return res.status(401).json({ error: 'user no longer exists' });
+      return res.status(401).json({ error: 'user does not exist anymore' });
     }
     //return userId
     req.user = user;

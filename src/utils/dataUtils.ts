@@ -7,7 +7,7 @@ export const lastJobItemOrder = async (columnId: string) => {
       order: 'desc',
     },
   });
-  return lastJobItem ? lastJobItem.order : 0;
+  return lastJobItem ? lastJobItem.order : -1;
 };
 
 export const lastColumnOrder = async (userId: string) => {
@@ -17,5 +17,5 @@ export const lastColumnOrder = async (userId: string) => {
       order: 'desc',
     },
   });
-  return lastColumn ? lastColumn.order : 0;
+  return lastColumn ? lastColumn.order : -1;
 };
