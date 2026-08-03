@@ -22,3 +22,14 @@ export const validateRequest = (schema: ZodType) => {
     next();
   };
 };
+
+export const validateParams = (schema: ZodType) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req.params);
+    if (!result.success) {
+      const flattened = z.flattenError(result.error);
+      return res.status(400).json({ error: flattened });
+    }
+    next();
+  };
+};

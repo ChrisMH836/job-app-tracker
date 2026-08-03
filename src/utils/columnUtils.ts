@@ -72,16 +72,16 @@ export const reorderColumns = async (
   }
 };
 
-export const updateJobCount = async (
-  columnId: string,
-  tx: Prisma.TransactionClient,
-) => {
-  const jobCount = await tx.jobItem.count({
-    where: { columnId },
-  });
-  const result = await tx.column.update({
-    where: { id: columnId },
-    data: { jobCount },
-  });
-  return result.jobCount;
-};
+// export const updateJobCount = async (
+//   columnId: string,
+//   tx: Prisma.TransactionClient,
+// ) => {
+//   const jobCount = await tx.jobItem.count({
+//     where: { columnId },
+//   });
+//   const result = await tx.column.update({
+//     where: { id: columnId },
+//     data: { jobCount },
+//   });
+//   return result.jobCount;
+// };

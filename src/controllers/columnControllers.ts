@@ -192,6 +192,7 @@ const getColumns = async (req: Request, res: Response) => {
       where: { userId: req.user.id },
       orderBy: { order: 'asc' },
       include: {
+        _count: { select: { jobItems: true } },
         jobItems: {
           orderBy: { order: 'asc' },
         },

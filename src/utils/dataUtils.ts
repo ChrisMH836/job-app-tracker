@@ -10,7 +10,7 @@ export const lastJobItemOrder = async (columnId: string) => {
   return lastJobItem ? lastJobItem.order : -1;
 };
 
-export const lastColumnOrder = async (userId: string) => {
+export const lastColumnOrder = async (userId: string): Promise<number> => {
   const lastColumn = await prisma.column.findFirst({
     where: { userId },
     orderBy: {

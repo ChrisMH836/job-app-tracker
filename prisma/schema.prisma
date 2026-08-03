@@ -26,7 +26,6 @@ model User {
 model Column {
   id String @id @default(uuid())
   name String @default("Untitled")
-  jobCount Int 
   order Int
   userId String
 

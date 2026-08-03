@@ -2,7 +2,7 @@ import { Response } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import 'dotenv';
 
-const generateToken = (userId: string, res: Response) => {
+const generateToken = (userId: string, res: Response): string => {
   if (!process.env.JWT_SECRET) {
     throw new Error(
       'FATAL ERROR: JWT_SECRET environment variable is not defined.',

@@ -6,7 +6,6 @@ import z from 'zod';
 import { createJobItemSchema } from '../validators/jobItemValidators';
 import { reorderJobItems } from '../utils/jobItemUtils';
 import { Action } from '../utils/types';
-import { updateJobCount } from '../utils/columnUtils';
 
 const createJobItem = async (
   req: Request<{}, {}, z.infer<typeof createJobItemSchema>>,
@@ -63,8 +62,6 @@ const createJobItem = async (
           order: targetOrder,
         },
       });
-      //update jobCount
-      await updateJobCount(columnId, tx);
       return jobItem;
     });
     //send response
@@ -116,8 +113,7 @@ const removeJobItem = async (req: Request<{ id: string }>, res: Response) => {
         },
         'REMOVE',
       );
-      //update jobCount
-      await updateJobCount(columnId, tx);
+
       return deletedJobItem;
     });
 
@@ -185,19 +181,15 @@ const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
       }
       // edit job item
 
-      //determine if moving to different column
-      let changingColumn: boolean = false;
       const updateData: Prisma.JobItemUpdateInput = {};
       if (columnId != undefined && columnId !== jobItem.columnId) {
         updateData.column = { connect: { id: columnId } };
-        changingColumn = true;
       }
 
       if (company != undefined) updateData.company = company;
       if (title != undefined) updateData.title = title;
       if (deadline != undefined) updateData.deadline = deadline;
       if (notes != undefined) updateData.notes = notes;
-      console.log(`ORDER: ${order}`);
       if (order != undefined) updateData.order = order;
 
       //update jobItems
@@ -205,11 +197,6 @@ const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
         where: { id: req.params.id },
         data: updateData,
       });
-      //update jobCounts
-      if (changingColumn) {
-        await updateJobCount(columnId, tx);
-        await updateJobCount(jobItem.columnId, tx);
-      }
 
       return updatedJobItem;
     });
