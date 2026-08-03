@@ -225,5 +225,45 @@ const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
     });
   }
 };
+const getJobItem = async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    // confirm that auth middleware inserted user
+    if (!req.user?.id) {
+      res.status(500).json({ error: 'internal error: user not found' });
+      return;
+    }
 
-export { createJobItem, removeJobItem, updateJobItem };
+    const jobItem = await prisma.jobItem.findUnique({
+      where: { id: req.params.id },
+      include: {
+        column: true,
+        offer: true,
+      },
+    });
+
+    //check if jobItem exists
+    if (!jobItem) {
+      res.status(404).json({ error: 'job item not found' });
+      return;
+    }
+    //verify that column exists
+    if (!jobItem.column) {
+      return res.status(404).json({
+        error: 'column not found',
+      });
+    }
+    //check if user is authorized to view column
+    if (jobItem.column.userId !== req.user.id) {
+      return res.status(403).json({
+        error: 'not authorized',
+      });
+    }
+    res.status(200).json({ status: 'success', data: jobItem });
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'unknown error',
+    });
+  }
+};
+
+export { createJobItem, removeJobItem, updateJobItem, getJobItem };

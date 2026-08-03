@@ -1,6 +1,8 @@
 import express from 'express';
 import {
   createColumn,
+  getColumn,
+  getColumns,
   removeColumn,
   updateColumn,
 } from '../controllers/columnControllers';
@@ -13,6 +15,9 @@ import {
 
 const router = express.Router();
 router.use(authMiddleware);
+
+router.get('/', getColumns);
+router.get('/:id', getColumn);
 router.post('/', validateRequest(createColumnSchema), createColumn);
 router.delete('/:id', removeColumn);
 router.put('/:id', validateRequest(updateColumnSchema), updateColumn);

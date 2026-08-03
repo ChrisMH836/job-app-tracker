@@ -2,11 +2,13 @@ import { config } from 'dotenv';
 import type { Express, Request, Response } from 'express';
 import express from 'express';
 import { connectDB, disconnectDB } from './config/db';
+import cookieParser from 'cookie-parser';
 
 // import routers
 import authRoutes from './routes/authRoutes';
 import jobItemRoutes from './routes/jobItemRoutes';
 import columnRoutes from './routes/columnRoutes';
+import userRoutes from './routes/userRoutes';
 
 config();
 connectDB();
@@ -14,11 +16,12 @@ const app: Express = express();
 
 //use middlewares
 app.use(express.json());
-
+app.use(cookieParser());
 //use routers
 app.use('/auth', authRoutes);
 app.use('/job', jobItemRoutes);
 app.use('/column', columnRoutes);
+app.use('/user', userRoutes);
 
 const PORT: number = 5001;
 

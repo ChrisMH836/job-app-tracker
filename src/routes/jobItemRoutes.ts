@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   createJobItem,
+  getJobItem,
   removeJobItem,
   updateJobItem,
 } from '../controllers/jobItemControllers';
@@ -14,7 +15,9 @@ import {
 
 const router = express.Router();
 router.use(authMiddleware);
+
 router.post('/', validateRequest(createJobItemSchema), createJobItem);
+router.get('/:id', getJobItem);
 router.delete('/:id', removeJobItem);
 router.put('/:id', validateRequest(updateJobItemSchema), updateJobItem);
 

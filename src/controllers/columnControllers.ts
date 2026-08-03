@@ -29,7 +29,7 @@ const createColumn = async (req: Request, res: Response) => {
       const column = await tx.column.create({
         data: {
           name,
-          userId: userId,
+          userId,
           order: targetOrder,
           jobCount: 0,
         },
@@ -180,4 +180,64 @@ const updateColumn = async (req: Request<{ id: string }>, res: Response) => {
     });
   }
 };
-export { createColumn, removeColumn, updateColumn };
+
+const getColumns = async (req: Request, res: Response) => {
+  try {
+    if (!req.user?.id) {
+      return res.status(500).json({
+        error: 'internal error: user not found',
+      });
+    }
+    const columns = await prisma.column.findMany({
+      where: { userId: req.user.id },
+      orderBy: { order: 'asc' },
+      include: {
+        jobItems: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+    res.status(200).json({ status: 'success', data: columns });
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'unknown error',
+    });
+  }
+};
+const getColumn = async (
+  req: Request<{ id: string }>,
+  res: Response,
+): Promise<void> => {
+  try {
+    if (!req.user?.id) {
+      res.status(500).json({ error: 'internal error: user not found' });
+      return;
+    }
+
+    const column = await prisma.column.findUnique({
+      where: { id: req.params.id },
+      include: {
+        jobItems: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+
+    if (!column) {
+      res.status(404).json({ error: 'column not found' });
+      return;
+    }
+
+    if (column.userId !== req.user.id) {
+      res.status(403).json({ error: 'not authorized' });
+      return;
+    }
+
+    res.status(200).json({ status: 'success', data: column });
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'unknown error',
+    });
+  }
+};
+export { createColumn, removeColumn, updateColumn, getColumns, getColumn };
