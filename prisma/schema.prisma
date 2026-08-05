@@ -38,11 +38,12 @@ model Column {
 }
 model JobItem {
   id String @id @default(uuid())
-  company String? 
-  title String?
+  company String 
+  title String
   deadline DateTime?
   notes String?
-  status JobStatus @default(SAVED)
+  minSalary Int?
+  maxSalary Int?
   order Int
   columnId String
 
@@ -55,8 +56,10 @@ model JobItem {
 }
 model Offer {
   id String @id @default(uuid())
+  title String
   startDate DateTime?
   endDate DateTime?
+  salary Int
   jobItemId String @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -64,11 +67,3 @@ model Offer {
   jobItem   JobItem   @relation(fields: [jobItemId], references: [id], onDelete: Cascade)
 }
 
-enum JobStatus {
-  SAVED
-  APPLIED
-  INTERVIEW
-  OFFER
-  REJECTED
-  WITHDRAWN
-}

@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 import type { Express, Request, Response } from 'express';
+import cors from 'cors';
 import express from 'express';
 import { connectDB, disconnectDB } from './config/db';
 import cookieParser from 'cookie-parser';
@@ -17,6 +18,12 @@ const app: Express = express();
 //use middlewares
 app.use(express.json());
 app.use(cookieParser());
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true, // allows cookies
+  }),
+);
 //use routers
 app.use('/auth', authRoutes);
 app.use('/job', jobItemRoutes);
