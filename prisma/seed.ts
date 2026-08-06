@@ -1,7 +1,6 @@
 import { prisma } from '../src/config/db';
 import { lastColumnOrder, lastJobItemOrder } from '../src/utils/dataUtils';
 import { JobStatus } from '../generated/prisma';
-import { updateJobCount } from '../src/utils/columnUtils';
 import bcrypt from 'bcrypt';
 const testUsers = [
   {
@@ -17,14 +16,12 @@ const testUsers = [
             title: 'Frontend Engineer',
             deadline: new Date('2026-09-15T00:00:00.000Z'),
             notes: 'Requires strong React and TypeScript experience.',
-            status: 'SAVED',
           },
           {
             company: 'Meta',
             title: 'Full Stack Developer',
             deadline: null,
             notes: 'Check referral network first.',
-            status: 'SAVED',
           },
         ],
       },
@@ -36,14 +33,12 @@ const testUsers = [
             title: 'Backend Engineer',
             deadline: new Date('2026-08-01T00:00:00.000Z'),
             notes: 'Submitted resume via portal.',
-            status: 'APPLIED',
           },
           {
             company: 'Airbnb',
             title: 'Full Stack Engineer',
             deadline: new Date('2026-08-05T00:00:00.000Z'),
             notes: 'Initial recruiter call scheduled.',
-            status: 'INTERVIEW',
           },
         ],
       },
@@ -55,7 +50,6 @@ const testUsers = [
             title: 'Web Audio Engineer',
             deadline: null,
             notes: 'Received competitive offer!',
-            status: 'OFFER',
             offer: {
               startDate: new Date('2026-09-01T00:00:00.000Z'),
               endDate: null,
@@ -66,7 +60,6 @@ const testUsers = [
             title: 'Software Engineer',
             deadline: null,
             notes: 'Passed final rounds, waiting on formal package.',
-            status: 'OFFER',
             offer: {
               startDate: new Date('2026-09-15T00:00:00.000Z'),
               endDate: null,
@@ -89,14 +82,12 @@ const testUsers = [
             title: 'Database Developer',
             deadline: new Date('2026-09-20T00:00:00.000Z'),
             notes: 'Focus on PL/SQL and performance tuning.',
-            status: 'SAVED',
           },
           {
             company: 'IBM',
             title: 'Systems Architect',
             deadline: null,
             notes: 'Hybrid role.',
-            status: 'SAVED',
           },
         ],
       },
@@ -108,14 +99,12 @@ const testUsers = [
             title: 'Network Software Engineer',
             deadline: new Date('2026-08-10T00:00:00.000Z'),
             notes: 'Phone screen completed.',
-            status: 'INTERVIEW',
           },
           {
             company: 'Palantir',
             title: 'Forward Deployed Engineer',
             deadline: new Date('2026-08-12T00:00:00.000Z'),
             notes: null,
-            status: 'APPLIED',
           },
         ],
       },
@@ -127,7 +116,6 @@ const testUsers = [
             title: 'Firmware Engineer',
             deadline: null,
             notes: 'Got the job offer!',
-            status: 'OFFER',
             offer: {
               startDate: new Date('2026-10-01T00:00:00.000Z'),
               endDate: null,
@@ -138,7 +126,6 @@ const testUsers = [
             title: 'GPU Software Engineer',
             deadline: null,
             notes: 'Strong team match.',
-            status: 'OFFER',
             offer: {
               startDate: new Date('2026-10-15T00:00:00.000Z'),
               endDate: null,
@@ -161,14 +148,12 @@ const testUsers = [
             title: 'Creative Cloud Web Engineer',
             deadline: new Date('2026-10-05T00:00:00.000Z'),
             notes: 'Canvas API and WebGL knowledge required.',
-            status: 'SAVED',
           },
           {
             company: 'Snap',
             title: 'AR Platform Engineer',
             deadline: null,
             notes: 'Check out lens studio frameworks.',
-            status: 'SAVED',
           },
         ],
       },
@@ -180,14 +165,12 @@ const testUsers = [
             title: 'Full Stack Developer',
             deadline: new Date('2026-08-18T00:00:00.000Z'),
             notes: 'Waiting for take-home project feedback.',
-            status: 'APPLIED',
           },
           {
             company: 'Datadog',
             title: 'Frontend Developer',
             deadline: new Date('2026-08-20T00:00:00.000Z'),
             notes: 'Completed HackerRank challenge.',
-            status: 'INTERVIEW',
           },
         ],
       },
@@ -199,7 +182,6 @@ const testUsers = [
             title: 'Cloud Infrastructure Engineer',
             deadline: null,
             notes: 'Offer accepted.',
-            status: 'OFFER',
             offer: {
               startDate: new Date('2026-09-01T00:00:00.000Z'),
               endDate: null,
@@ -210,7 +192,6 @@ const testUsers = [
             title: 'Open Source Software Engineer',
             deadline: null,
             notes: 'Great culture and benefits package.',
-            status: 'OFFER',
             offer: {
               startDate: new Date('2026-09-15T00:00:00.000Z'),
               endDate: null,
@@ -240,7 +221,6 @@ async function main() {
         data: {
           name: columnData.name,
           userId: user.id,
-          jobCount: 0,
           order: columnOrder,
         },
       });
@@ -253,14 +233,8 @@ async function main() {
             title: jobItemData.title,
             deadline: jobItemData.deadline,
             notes: jobItemData.notes,
-            status: jobItemData.status as JobStatus,
             order: jobOrder + 1,
           },
-        });
-        //update jobCount
-        await prisma.$transaction(async (tx) => {
-          const count = await updateJobCount(column.id, tx);
-          console.log(`-  UPDATED JOB COUNT: ${count}`);
         });
 
         console.log(

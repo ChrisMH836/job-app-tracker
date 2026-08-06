@@ -39,12 +39,12 @@ const Login = () => {
       const data = await response.json();
       //handle error
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to log in');
+        throw new Error(data.error || 'Failed to log in');
       }
       console.log('Login successful:', data);
       navigate('/app');
-    } catch (error: any) {
-      setError(error.message || 'something went wrong');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -52,30 +52,35 @@ const Login = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-4 bg-blue-400 w-120 border-2 border-red-400 rounded-2xl"
+      className="p-4 w-120  bg-zinc-400 shadow-[0_0_10px_5px_rgba(0,0,0,0.2)] rounded-2xl flex flex-col"
     >
       <h1 className="text-center">login</h1>
-      <div className=" flex flex-col">
-        <label htmlFor="email">Email</label>
+      <div className="form-input-section flex flex-col gap-2">
+        <label htmlFor="email">email</label>
         <input
           ref={emailRef}
           type="text"
           id="email"
+          name="email"
           className="bg-white rounded"
         />
       </div>
-      <div className=" flex flex-col">
-        <label htmlFor="password">Password</label>
+      <div className="form-input-section flex flex-col gap-2">
+        <label htmlFor="password">password</label>
         <input
           ref={passwordRef}
           type="text"
           id="password"
+          name="password"
           className="bg-white rounded"
         />
       </div>
       {error && <h1 className="text-red-500 font-bold text-center">{error}</h1>}
       {isLoading && <h1>Loading...</h1>}
-      <button type="submit" className=" bg-rose-300 mt-2 rounded  ">
+      <button
+        type="submit"
+        className="mt-5 px-3 py-2 bg-zinc-500 hover:bg-zinc-800 hover:text-white rounded self-center"
+      >
         Submit
       </button>
     </form>

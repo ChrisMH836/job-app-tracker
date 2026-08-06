@@ -17,6 +17,8 @@ export const validateRequest = (schema: ZodType) => {
         error: errorMessages.join(', '),
       });
     }
+
+    req.body = result.data;
     console.log('end of validate request');
 
     next();
@@ -30,6 +32,8 @@ export const validateParams = (schema: ZodType) => {
       const flattened = z.flattenError(result.error);
       return res.status(400).json({ error: flattened });
     }
+
+    req.body = result.data;
     next();
   };
 };
