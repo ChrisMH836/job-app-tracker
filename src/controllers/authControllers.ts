@@ -57,17 +57,16 @@ const login = async (req: Request, res: Response) => {
         email: email,
       },
     });
-
     if (!user) {
       return res.status(402).json({
-        error: 'invalid username or password',
+        error: 'invalid email or password',
       });
     }
     //check if password hashes are the same
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(403).json({
-        error: 'invalid username or password',
+        error: 'invalid email or password',
       });
     }
     //generate jwt token

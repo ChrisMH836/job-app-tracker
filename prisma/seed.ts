@@ -1,12 +1,11 @@
 import { prisma } from '../src/config/db';
 import { lastColumnOrder, lastJobItemOrder } from '../src/utils/dataUtils';
-import { JobStatus } from '../generated/prisma';
 import bcrypt from 'bcrypt';
 const testUsers = [
   {
     name: 'Chris',
-    email: 'Chris@test.com',
-    password: '123',
+    email: 'chris@test.com',
+    password: '12345678',
     columns: [
       {
         name: 'Incomplete',
@@ -71,7 +70,7 @@ const testUsers = [
   },
   {
     name: 'John',
-    email: 'John@test.com',
+    email: 'john@test.com',
     password: 'John_password',
     columns: [
       {
@@ -137,7 +136,7 @@ const testUsers = [
   },
   {
     name: 'Tom',
-    email: 'Tom@test.com',
+    email: 'tom@test.com',
     password: 'Tom_password',
     columns: [
       {

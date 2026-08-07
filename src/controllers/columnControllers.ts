@@ -195,6 +195,7 @@ const getColumns = async (req: Request, res: Response) => {
         _count: { select: { jobItems: true } },
         jobItems: {
           orderBy: { order: 'asc' },
+          include: { offer: true },
         },
       },
     });
@@ -220,6 +221,7 @@ const getColumn = async (
       include: {
         jobItems: {
           orderBy: { order: 'asc' },
+          include: { offer: true },
         },
       },
     });

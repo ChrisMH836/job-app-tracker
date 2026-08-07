@@ -8,26 +8,27 @@ export type Column = {
   id: string;
   name: string;
   order: number;
+  jobItems: JobItem[];
 };
 
 export type JobItem = {
   id: string;
   company: string;
   title: string;
-  deadline?: Date;
-  minsalary?: number;
-  maxSalary?: number;
-  notes?: string;
+  deadline: Date | null;
+  minSalary: number | null;
+  maxSalary: number | null;
+  notes: string | null;
   order: number;
   columnId: string;
-  offer?: Offer;
+  offer?: Offer | null;
 };
 
 export type Offer = {
   id: string;
   title: string;
-  startDate?: Date;
-  endDate?: Date;
+  startDate?: Date | null;
+  endDate?: Date | null;
   salary: number;
 };
 
