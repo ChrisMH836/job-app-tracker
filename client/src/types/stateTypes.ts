@@ -9,6 +9,7 @@ export type Column = {
   name: string;
   order: number;
   jobItems: JobItem[];
+  jobCount: number;
 };
 
 export type JobItem = {

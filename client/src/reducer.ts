@@ -1,5 +1,5 @@
 import type { AppState, Column, User } from './types/stateTypes';
-import type { rawColumnsData } from '../../src/types/responseTypes.ts';
+
 type Action =
   | { type: 'FETCH_START' }
   | { type: 'FETCH_SUCCESS'; payload: { columns: Column[]; user: User } }

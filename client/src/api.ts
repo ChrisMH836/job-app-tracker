@@ -17,6 +17,7 @@ export const fetchColumns = async (): Promise<Column[]> => {
     id: column.id,
     name: column.name,
     order: column.order,
+    jobCount: column._count.jobItems,
     jobItems: column.jobItems.map((item) => ({
       id: item.id,
       company: item.company,
