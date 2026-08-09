@@ -1,5 +1,9 @@
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
+
+interface LocationState {
+  err?: string;
+}
 
 const Login = () => {
   //form data
@@ -7,7 +11,10 @@ const Login = () => {
   const passwordRef = useRef<HTMLInputElement>(null);
 
   //state to handle waiting for a response and an error response
-  const [error, setError] = useState<string | null>(null);
+  const locationState = useLocation().state as LocationState | null;
+  console.log(`locationState: ${locationState}, error: ${locationState?.err}`);
+
+  const [error, setError] = useState<string | null>(locationState?.err || null);
   const [isLoading, setIsLoading] = useState(false);
   //navigator to redirect user after successful form submission
   const navigate = useNavigate();

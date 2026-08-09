@@ -1,4 +1,5 @@
-import { Prisma } from '../../generated/prisma';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Prisma } from '../../../generated/prisma';
 
 //type for column/ request
 const getColumnsArgs = {
@@ -19,7 +20,7 @@ export type getColumnsData = {
   data: ColumnDataWithJobs[];
 };
 
-//tyoe for user/me request
+//type for user/me request
 export type userData = Prisma.UserGetPayload<Prisma.UserFindUniqueArgs>;
 
 export type getUserData = {

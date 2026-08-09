@@ -1,7 +1,4 @@
-import type {
-  getColumnsData,
-  getUserData,
-} from '../../src/types/responseTypes';
+import type { getColumnsData, getUserData } from './types/responseTypes';
 import type { Column, Offer, User } from './types/stateTypes';
 
 const serverURL = 'http://localhost:5001';
@@ -9,7 +6,7 @@ export const fetchColumns = async (): Promise<Column[]> => {
   const response = await fetch(`${serverURL}/column`, {
     credentials: 'include',
   });
-  if (!response.ok) throw new Error(`API error: ${response.status}`);
+  if (!response.ok) throw new Error('An error occured. Please try again');
 
   const { data: columnsData }: getColumnsData = await response.json();
 

@@ -13,7 +13,7 @@ const KanbanColumn = ({ column }: KanbanColumnProps) => {
       </div>
       <div className="job-section p-2 flex flex-col gap-2 shrink-0 overflow-y-auto">
         {column.jobItems.map((item) => (
-          <JobCard jobItem={item} />
+          <JobCard jobItem={item} key={item.id} />
         ))}
       </div>
     </div>

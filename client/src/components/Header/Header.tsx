@@ -1,4 +1,9 @@
-const Header = () => {
+import type { User } from '../../types/stateTypes';
+
+interface HeaderProps {
+  user: User;
+}
+const Header = ({ user }: HeaderProps) => {
   return (
     <header className="px-5 h-20  border-b-2 border-zinc-400 flex items-center">
       <div className="left-section">
@@ -19,7 +24,7 @@ const Header = () => {
       </div>
       <div className="right-section">
         <div className="profile bg-emerald-500 text-2xl text-white font-bold w-15 h-15  rounded-lg flex justify-center items-center">
-          C
+          {user?.name[0].toUpperCase()}
         </div>
       </div>
     </header>

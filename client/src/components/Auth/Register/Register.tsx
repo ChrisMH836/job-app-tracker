@@ -1,6 +1,20 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
+interface RegisterResponse {
+  status: string;
+  data: {
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
+  };
+}
+
+interface ErrorResponse {
+  error: string;
+}
 const Register = () => {
   const usernameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -22,6 +36,7 @@ const Register = () => {
     //validate form fields
     if (!name || !email || !password) {
       setError('Please fill all fields');
+      return;
     }
 
     //send request to register endpoint
@@ -35,12 +50,14 @@ const Register = () => {
         credentials: 'include',
         body: JSON.stringify({ name, email, password }),
       });
-      const { data } = await response.json();
+      const json = await response.json();
       //handle error
       if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong. Try again later');
+        const errorJson = json as ErrorResponse;
+        throw new Error(errorJson.error || 'Something went wrong');
       }
-      console.log('Signup successful:', data);
+      const successJson = json as RegisterResponse;
+      console.log('Signup successful:', successJson.data);
       navigate('/app');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'something went wrong');

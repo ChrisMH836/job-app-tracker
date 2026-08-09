@@ -16,16 +16,15 @@ export const reducer = (prevState: AppState, action: Action): AppState => {
   switch (action.type) {
     case 'FETCH_START':
       return { ...prevState, isLoading: true, error: null };
-      break;
     case 'FETCH_SUCCESS':
       return {
         ...prevState,
         user: action.payload.user,
         columns: action.payload.columns,
+        isLoading: false,
       };
-      break;
     case 'FETCH_ERROR':
-      return { ...prevState, error: action.payload.error };
+      return { ...prevState, error: action.payload.error, isLoading: false };
     default:
       return prevState;
   }
