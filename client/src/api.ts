@@ -1,14 +1,21 @@
-import type { getColumnsData, getUserData } from './types/responseTypes';
+import type {
+  GetDeepColumnsResponse,
+  GetFlatColumnResponse,
+  GetUserResponse,
+} from './types/responseTypes';
 import type { Column, Offer, User } from './types/stateTypes';
 
 const serverURL = 'http://localhost:5001';
 export const fetchColumns = async (): Promise<Column[]> => {
   const response = await fetch(`${serverURL}/column`, {
     credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
   });
   if (!response.ok) throw new Error('An error occured. Please try again');
 
-  const { data: columnsData }: getColumnsData = await response.json();
+  const { data: columnsData }: GetDeepColumnsResponse = await response.json();
 
   const columns: Column[] = columnsData.map((column) => ({
     id: column.id,
@@ -46,7 +53,7 @@ export const fetchMe = async (): Promise<User> => {
   console.log(response);
   if (!response.ok) throw new Error(`API error: ${response.status}`);
 
-  const { data: userData }: getUserData = await response.json();
+  const { data: userData }: GetUserResponse = await response.json();
 
   const user = {
     id: userData.id,
@@ -54,4 +61,27 @@ export const fetchMe = async (): Promise<User> => {
     email: userData.email,
   } as User;
   return user;
+};
+
+export const createColumn = async (name: string): Promise<Column> => {
+  const response = await fetch(`${serverURL}/column`, {
+    credentials: 'include',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name }),
+  });
+  if (!response.ok) throw new Error('An error occured. Please try again');
+
+  const { data: columnData }: GetFlatColumnResponse = await response.json();
+
+  const column = {
+    id: columnData.id,
+    name: columnData.name,
+    order: columnData.order,
+    jobItems: [],
+    jobCount: 0,
+  } as Column;
+  return column;
 };

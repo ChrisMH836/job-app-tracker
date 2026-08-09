@@ -31,7 +31,6 @@ const createColumn = async (req: Request, res: Response) => {
           name,
           userId,
           order: targetOrder,
-          jobCount: 0,
         },
       });
       return column;

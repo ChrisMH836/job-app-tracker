@@ -12,7 +12,6 @@ const Login = () => {
 
   //state to handle waiting for a response and an error response
   const locationState = useLocation().state as LocationState | null;
-  console.log(`locationState: ${locationState}, error: ${locationState?.err}`);
 
   const [error, setError] = useState<string | null>(locationState?.err || null);
   const [isLoading, setIsLoading] = useState(false);

@@ -30,9 +30,7 @@ const App = () => {
     };
     loadData();
   }, [navigate]);
-  useEffect(() => {
-    console.log('Current App State:', appState);
-  }, [appState]);
+
   return (
     <div>
       {appState.user && <Header user={appState.user} />}

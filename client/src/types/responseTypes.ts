@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Prisma } from '../../../generated/prisma';
 
-//type for column/ request
-const getColumnsArgs = {
+// request arguments
+
+const getDeepColumnArgs = {
   orderBy: { order: 'asc' as const },
   include: {
     _count: { select: { jobItems: true } },
@@ -13,17 +14,51 @@ const getColumnsArgs = {
   },
 } satisfies Prisma.ColumnFindManyArgs;
 
-export type ColumnDataWithJobs = Prisma.ColumnGetPayload<typeof getColumnsArgs>;
+const getDeepJobItemArgs = {
+  orderBy: { order: 'asc' as const },
+  include: { offer: true },
+} satisfies Prisma.JobItemFindManyArgs;
 
-export type getColumnsData = {
+// prisma return types
+
+export type FlatColumnData = Prisma.ColumnGetPayload<object>;
+export type DeepColumnData = Prisma.ColumnGetPayload<typeof getDeepColumnArgs>;
+
+export type FlatUserData = Prisma.UserGetPayload<object>;
+
+export type FlatJobItemData = Prisma.JobItemGetPayload<object>;
+export type DeepJobItemData = Prisma.JobItemGetPayload<
+  typeof getDeepJobItemArgs
+>;
+
+//server response types
+export type GetUserResponse = {
   status: string;
-  data: ColumnDataWithJobs[];
+  data: FlatUserData;
 };
 
-//type for user/me request
-export type userData = Prisma.UserGetPayload<Prisma.UserFindUniqueArgs>;
-
-export type getUserData = {
+export type GetDeepColumnsResponse = {
   status: string;
-  data: userData;
+  data: DeepColumnData[];
+};
+export type GetFlatColumnResponse = {
+  status: string;
+  data: FlatColumnData;
+};
+export type GetDeepColumnResponse = {
+  status: string;
+  data: DeepColumnData;
+};
+
+export type GetDeepJobItemsResponse = {
+  status: string;
+  data: DeepJobItemData[];
+};
+export type GetFlatJobItemResponse = {
+  status: string;
+  data: FlatJobItemData;
+};
+export type GetDeepJobItemResponse = {
+  status: string;
+  data: DeepJobItemData;
 };
