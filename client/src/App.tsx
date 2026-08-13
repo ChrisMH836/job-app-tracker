@@ -1,7 +1,6 @@
 import { useEffect, useReducer } from 'react';
 import { initialState, reducer } from './reducer';
 import {
-  createColumnApi,
   createJobItemApi,
   fetchColumns,
   fetchMe,
@@ -13,9 +12,11 @@ import {
 import Header from './components/Header/Header';
 import { useNavigate } from 'react-router';
 import KanbanColumn from './components/KanbanColumn/KanbanColumn';
+import { useKanban } from './hooks/useKanban';
 
 const App = () => {
   const [appState, dispatch] = useReducer(reducer, initialState);
+  const { createColumn } = useKanban(dispatch);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,10 +53,7 @@ const App = () => {
         <button
           onClick={async () => {
             console.log('creating column...');
-            const columns = await createColumnApi('Test TWO', 1);
-            console.log('dispatching with:', columns);
-            dispatch({ type: 'SET_COLUMNS', payload: { columns } });
-            console.log('dispatched');
+            await createColumn('Test TWO', 1);
           }}
           className="p-2 bg-red-400 rounded hover:bg-red-600 m-2"
         >

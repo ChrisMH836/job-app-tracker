@@ -38,6 +38,7 @@ export type AppState = {
   columns: Column[];
   isLoading: boolean;
   error: string | null;
+  isMutating: boolean;
 };
 export type Status =
   | 'SAVED'
