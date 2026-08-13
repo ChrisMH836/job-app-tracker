@@ -12,7 +12,6 @@ import {
 } from '../middlewares/validateRequest';
 import {
   createJobItemSchema,
-  removeJobItemSchema,
   updateJobItemSchema,
 } from '../validators/jobItemValidators';
 import { idParamSchema } from '../validators/paramValidators';
@@ -22,7 +21,7 @@ router.use(authMiddleware);
 
 router.post('/', validateRequest(createJobItemSchema), createJobItem);
 router.get('/:id', validateParams(idParamSchema), getJobItem);
-router.delete('/:id', removeJobItem);
+router.delete('/:id', validateParams(idParamSchema), removeJobItem);
 router.put(
   '/:id',
   validateParams(idParamSchema),

@@ -5,19 +5,20 @@ export const jobStatusSchema = z.enum([
   'SAVED',
   'APPLIED',
   'INTERVIEW',
-  'OFFER',
+  'OFFERED',
   'REJECTED',
   'WITHDRAWN',
 ]);
 
 export const createJobItemSchema = z.object({
   columnId: z.uuid(),
-  company: z.string().optional().nullable(),
-  title: z.string().optional().nullable(),
+  company: z.string(),
+  title: z.string(),
   deadline: z.coerce.date().optional().nullable(),
   notes: z.string().optional().nullable(),
   status: jobStatusSchema.default('SAVED'),
   order: z.coerce.number().int().optional(),
+  minSalary: z.number(),
+  maxSalary: z.number(),
 });
-export const removeJobItemSchema = z.object({});
 export const updateJobItemSchema = createJobItemSchema.partial();

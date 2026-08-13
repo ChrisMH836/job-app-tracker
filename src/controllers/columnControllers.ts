@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/db';
 import { lastColumnOrder } from '../utils/dataUtils';
-import { Prisma } from '../../generated/prisma';
+import { Column, Prisma } from '../../generated/prisma';
 import { reorderColumns } from '../utils/columnUtils';
 import { Action } from '../utils/types';
 
@@ -33,7 +33,18 @@ const createColumn = async (req: Request, res: Response) => {
           order: targetOrder,
         },
       });
-      return column;
+      const newColumns = await tx.column.findMany({
+        where: { userId: req.user?.id },
+        orderBy: { order: 'asc' },
+        include: {
+          _count: { select: { jobItems: true } },
+          jobItems: {
+            orderBy: { order: 'asc' },
+            include: { offer: true },
+          },
+        },
+      });
+      return newColumns;
     });
 
     //return response
@@ -88,8 +99,18 @@ const removeColumn = async (req: Request<{ id: string }>, res: Response) => {
         },
         'REMOVE',
       );
-
-      return deletedColumn;
+      const newColumns = await tx.column.findMany({
+        where: { userId: req.user?.id },
+        orderBy: { order: 'asc' },
+        include: {
+          _count: { select: { jobItems: true } },
+          jobItems: {
+            orderBy: { order: 'asc' },
+            include: { offer: true },
+          },
+        },
+      });
+      return newColumns;
     });
     //send response
     res.status(200).json({
@@ -114,7 +135,11 @@ const updateColumn = async (req: Request<{ id: string }>, res: Response) => {
     const userId = req.user.id;
     //destructure body
     const { name, order } = req.body;
-
+    //find order of last column
+    const greatestOrder = await lastColumnOrder(userId);
+    //calculate order of new column
+    const targetOrder =
+      order && order <= greatestOrder + 1 ? order : greatestOrder + 1;
     //get Column with id param
     const column = await prisma.column.findUnique({
       where: {
@@ -136,7 +161,7 @@ const updateColumn = async (req: Request<{ id: string }>, res: Response) => {
     // edit job item
     const result = await prisma.$transaction(async (tx) => {
       //check if order is updarted
-      if (order !== undefined && order !== column.order) {
+      if (order !== undefined && targetOrder !== column.order) {
         //set order to 'safe' negative value
         await tx.column.update({
           where: { id: column.id },
@@ -147,7 +172,7 @@ const updateColumn = async (req: Request<{ id: string }>, res: Response) => {
         await reorderColumns(
           {
             originalOrder: column.order,
-            targetOrder: order,
+            targetOrder: targetOrder,
             userId: column.userId,
             tx,
           },
@@ -157,15 +182,26 @@ const updateColumn = async (req: Request<{ id: string }>, res: Response) => {
       // edit column
       const updateData: Prisma.ColumnUpdateInput = {};
       if (name !== undefined) updateData.name = name;
-      if (order !== undefined && order !== column.order)
-        updateData.order = order;
-
+      if (order !== undefined && targetOrder !== column.order)
+        updateData.order = targetOrder;
+      console.log('updateData:', updateData);
       const updatedColumn = await tx.column.update({
         where: { id: req.params.id },
         data: updateData,
       });
       //update jobCount
-      return updatedColumn;
+      const newColumns = await tx.column.findMany({
+        where: { userId: req.user?.id },
+        orderBy: { order: 'asc' },
+        include: {
+          _count: { select: { jobItems: true } },
+          jobItems: {
+            orderBy: { order: 'asc' },
+            include: { offer: true },
+          },
+        },
+      });
+      return newColumns;
     });
 
     //return response

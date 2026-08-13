@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/db';
 import { lastJobItemOrder } from '../utils/dataUtils';
-import { JobItem, Prisma } from '../../generated/prisma';
+import { Prisma } from '../../generated/prisma';
 import z from 'zod';
 import { createJobItemSchema } from '../validators/jobItemValidators';
 import { reorderJobItems } from '../utils/jobItemUtils';
@@ -11,6 +11,7 @@ const createJobItem = async (
   req: Request<{}, {}, z.infer<typeof createJobItemSchema>>,
   res: Response,
 ) => {
+  console.log('create jobItem reached');
   try {
     // confirm that auth middleware inserted user
     if (!req.user?.id) {
@@ -19,15 +20,24 @@ const createJobItem = async (
       });
     }
     //destructure body
-    const { columnId, company, title, deadline, notes, status, order } =
-      req.body;
-
+    const {
+      columnId,
+      company,
+      title,
+      deadline,
+      notes,
+      status,
+      minSalary,
+      maxSalary,
+      order,
+    } = req.body;
+    console.log('req.body', req.body);
     //check if column exists
     const column = await prisma.column.findUnique({
       where: { id: columnId },
       include: { user: true },
     });
-
+    console.log('column ', column);
     if (!column) {
       return res.status(404).json({
         error: 'column not found',
@@ -60,9 +70,22 @@ const createJobItem = async (
           notes,
           status,
           order: targetOrder,
+          minSalary,
+          maxSalary,
         },
       });
-      return jobItem;
+      const newColumns = await tx.column.findMany({
+        where: { userId: req.user?.id },
+        orderBy: { order: 'asc' },
+        include: {
+          _count: { select: { jobItems: true } },
+          jobItems: {
+            orderBy: { order: 'asc' },
+            include: { offer: true },
+          },
+        },
+      });
+      return newColumns;
     });
     //send response
     res.status(200).json({ status: 'success', data: result });
@@ -114,7 +137,18 @@ const removeJobItem = async (req: Request<{ id: string }>, res: Response) => {
         'REMOVE',
       );
 
-      return deletedJobItem;
+      const newColumns = await tx.column.findMany({
+        where: { userId: req.user?.id },
+        orderBy: { order: 'asc' },
+        include: {
+          _count: { select: { jobItems: true } },
+          jobItems: {
+            orderBy: { order: 'asc' },
+            include: { offer: true },
+          },
+        },
+      });
+      return newColumns;
     });
 
     //send response
@@ -138,8 +172,22 @@ const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
       });
     }
     //destructure body
-    const { columnId, company, title, deadline, notes, order } = req.body;
+    const {
+      columnId,
+      company,
+      title,
+      deadline,
+      notes,
+      order,
+      minSalary,
+      maxSalary,
+    } = req.body;
 
+    //find order of last column
+    const greatestOrder = await lastJobItemOrder(columnId);
+    //calculate order of new column
+    const targetOrder =
+      order && order <= greatestOrder + 1 ? order : greatestOrder + 1;
     //get jobItem with id param
     const jobItem = await prisma.jobItem.findUnique({
       where: {
@@ -161,7 +209,7 @@ const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
     }
     const result = await prisma.$transaction(async (tx) => {
       //check if order is updarted
-      if (order !== undefined && order !== jobItem.order) {
+      if (order !== undefined && targetOrder !== jobItem.order) {
         //set order to 'safe' negative value
         await tx.jobItem.update({
           where: { id: jobItem.id },
@@ -172,7 +220,7 @@ const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
         await reorderJobItems(
           {
             originalOrder: jobItem.order,
-            targetOrder: order,
+            targetOrder: targetOrder,
             columnId: jobItem.columnId,
             tx,
           },
@@ -190,7 +238,9 @@ const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
       if (title != undefined) updateData.title = title;
       if (deadline != undefined) updateData.deadline = deadline;
       if (notes != undefined) updateData.notes = notes;
-      if (order != undefined) updateData.order = order;
+      if (order != undefined) updateData.order = targetOrder;
+      if (minSalary != undefined) updateData.minSalary = minSalary;
+      if (maxSalary != undefined) updateData.maxSalary = maxSalary;
 
       //update jobItems
       const updatedJobItem = await tx.jobItem.update({
@@ -198,7 +248,18 @@ const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
         data: updateData,
       });
 
-      return updatedJobItem;
+      const newColumns = await tx.column.findMany({
+        where: { userId: req.user?.id },
+        orderBy: { order: 'asc' },
+        include: {
+          _count: { select: { jobItems: true } },
+          jobItems: {
+            orderBy: { order: 'asc' },
+            include: { offer: true },
+          },
+        },
+      });
+      return newColumns;
     });
 
     //return response

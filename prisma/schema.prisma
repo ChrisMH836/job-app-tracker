@@ -42,6 +42,7 @@ model JobItem {
   title String
   deadline DateTime?
   notes String?
+  status Status?
   minSalary Int?
   maxSalary Int?
   order Int
@@ -67,3 +68,11 @@ model Offer {
   jobItem   JobItem   @relation(fields: [jobItemId], references: [id], onDelete: Cascade)
 }
 
+enum Status {
+  SAVED
+  APPLIED
+  INTERVIEW
+  OFFERED
+  REJECTED
+  WITHDRAWN
+}

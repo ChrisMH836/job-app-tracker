@@ -13,7 +13,7 @@ export const authMiddleware = async (
   res: Response,
   next: NextFunction,
 ) => {
-  console.log('auth middleware reached');
+  console.log('auth middleware reached, body: ', req.body);
   if (!process.env.JWT_SECRET) {
     return res.status(500).json({
       error: 'JWT not configured',

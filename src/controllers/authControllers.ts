@@ -52,6 +52,7 @@ const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     //check if email exists in db
+
     const user = await prisma.user.findUnique({
       where: {
         email: email,

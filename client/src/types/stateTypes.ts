@@ -39,3 +39,12 @@ export type AppState = {
   isLoading: boolean;
   error: string | null;
 };
+export type Status =
+  | 'SAVED'
+  | 'APPLIED'
+  | 'INTERVIEW'
+  | 'OFFER'
+  | 'REJECTED'
+  | 'WITHDRAWN';
+export type FlatColumn = Pick<Column, 'id' | 'name' | 'order'>;
+export type FlatJobItem = Exclude<JobItem, 'offer'>;
