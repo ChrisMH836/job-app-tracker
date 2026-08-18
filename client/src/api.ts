@@ -3,37 +3,41 @@ import type {
   GetDeepColumnsResponse,
   GetUserResponse,
 } from './types/responseTypes';
-import type { Column, Status, User } from './types/stateTypes';
+import type { Column, Priority, User } from './types/stateTypes';
 
 const serverURL = 'http://localhost:5001';
 
 const mapColumns = (columnsData: DeepColumnData[]): Column[] => {
-  return columnsData.map((column) => ({
-    id: column.id,
-    name: column.name,
-    order: column.order,
-    jobCount: column._count.jobItems,
-    jobItems: column.jobItems.map((item) => ({
-      id: item.id,
-      company: item.company,
-      title: item.title,
-      deadline: item.deadline,
-      minSalary: item.minSalary,
-      maxSalary: item.maxSalary,
-      notes: item.notes,
-      order: item.order,
-      columnId: item.columnId,
-      offer: item.offer
-        ? {
-            id: item.offer.id,
-            title: item.offer.title,
-            startDate: item.offer.startDate,
-            endDate: item.offer.endDate,
-            salary: item.offer.salary,
-          }
-        : null,
-    })),
-  }));
+  return columnsData.map(
+    (column) =>
+      ({
+        id: column.id,
+        name: column.name,
+        order: column.order,
+        jobCount: column._count.jobItems,
+        jobItems: column.jobItems.map((item) => ({
+          id: item.id,
+          company: item.company,
+          title: item.title,
+          deadline: item.deadline,
+          priority: item.priority,
+          minSalary: item.minSalary,
+          maxSalary: item.maxSalary,
+          notes: item.notes,
+          order: item.order,
+          columnId: item.columnId,
+          offer: item.offer
+            ? {
+                id: item.offer.id,
+                title: item.offer.title,
+                startDate: item.offer.startDate,
+                endDate: item.offer.endDate,
+                salary: item.offer.salary,
+              }
+            : null,
+        })),
+      }) satisfies Column,
+  );
 };
 
 export const fetchColumns = async (): Promise<Column[]> => {
@@ -129,7 +133,7 @@ export const createJobItemApi = async (
   company: string,
   deadline?: Date,
   notes?: string,
-  status?: Status,
+  priority?: Priority,
   minSalary?: number,
   maxSalary?: number,
   order?: number,
@@ -146,7 +150,7 @@ export const createJobItemApi = async (
       company,
       ...(deadline !== undefined && { deadline }),
       ...(notes !== undefined && { notes }),
-      ...(status !== undefined && { status }),
+      ...(priority !== undefined && { priority }),
       ...(minSalary !== undefined && { minSalary }),
       ...(maxSalary !== undefined && { maxSalary }),
       ...(order !== undefined && { order }),
@@ -166,7 +170,7 @@ export const updateJobItemApi = async (
   company?: string,
   deadline?: Date,
   notes?: string,
-  status?: Status,
+  priority?: Priority,
   minSalary?: number,
   maxSalary?: number,
   order?: number,
@@ -183,7 +187,7 @@ export const updateJobItemApi = async (
       ...(company !== undefined && { company }),
       ...(deadline !== undefined && { deadline }),
       ...(notes !== undefined && { notes }),
-      ...(status !== undefined && { status }),
+      ...(priority !== undefined && { priority }),
       ...(minSalary !== undefined && { minSalary }),
       ...(maxSalary !== undefined && { maxSalary }),
       ...(order !== undefined && { order }),

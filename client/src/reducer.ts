@@ -6,7 +6,9 @@ export type Action =
   | { type: 'SET_ERROR'; payload: { error: string } }
   | { type: 'SET_COLUMNS'; payload: { columns: Column[] } }
   | { type: 'SET_MUTATING'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: { error: string } };
+  | { type: 'SET_ERROR'; payload: { error: string } }
+  | { type: 'CLOSE_MODAL' }
+  | { type: 'OPEN_MODAL' };
 // | { type: 'CREATE_COLUMN'; payload: { column: Column } }
 // | { type: 'UPDATE_COLUMN'; payload: { updateData: FlatColumn } }
 // | { type: 'REMOVE_COLUMN'; payload: { id: string } }
@@ -20,6 +22,7 @@ export const initialState: AppState = {
   isLoading: true,
   error: null,
   isMutating: false,
+  isModalOpen: false,
 };
 
 export const reducer = (prevState: AppState, action: Action): AppState => {
@@ -40,6 +43,10 @@ export const reducer = (prevState: AppState, action: Action): AppState => {
       return { ...prevState, columns: action.payload.columns };
     case 'SET_MUTATING':
       return { ...prevState, isMutating: action.payload };
+    case 'OPEN_MODAL':
+      return { ...prevState, isModalOpen: true };
+    case 'CLOSE_MODAL':
+      return { ...prevState, isModalOpen: false };
     default:
       return prevState;
     // case 'CREATE_COLUMN': {

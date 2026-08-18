@@ -17,6 +17,7 @@ export type JobItem = {
   company: string;
   title: string;
   deadline: Date | null;
+  priority: Priority | null;
   minSalary: number | null;
   maxSalary: number | null;
   notes: string | null;
@@ -39,13 +40,8 @@ export type AppState = {
   isLoading: boolean;
   error: string | null;
   isMutating: boolean;
+  isModalOpen: boolean;
 };
-export type Status =
-  | 'SAVED'
-  | 'APPLIED'
-  | 'INTERVIEW'
-  | 'OFFER'
-  | 'REJECTED'
-  | 'WITHDRAWN';
+export type Priority = 'NONE' | 'LOW' | 'MEDIUM' | 'HIGH';
 export type FlatColumn = Pick<Column, 'id' | 'name' | 'order'>;
 export type FlatJobItem = Exclude<JobItem, 'offer'>;

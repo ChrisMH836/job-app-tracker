@@ -9,10 +9,11 @@ import {
   updateColumnApi,
   updateJobItemApi,
 } from '../api';
-import type { Column, Status } from '../types/stateTypes';
-
-export const useKanban = (dispatch: Dispatch<Action>) => {
+import type { AppState, Column } from '../types/stateTypes';
+import type { Priority } from '../types/stateTypes';
+export const useKanban = (appState: AppState, dispatch: Dispatch<Action>) => {
   const mutate = async (apiCall: () => Promise<Column[]>) => {
+    if (appState.isMutating) return;
     dispatch({ type: 'SET_MUTATING', payload: true });
     try {
       const columns = await apiCall();
@@ -47,7 +48,7 @@ export const useKanban = (dispatch: Dispatch<Action>) => {
     company: string,
     deadline?: Date,
     notes?: string,
-    status?: Status,
+    priority?: Priority,
     minSalary?: number,
     maxSalary?: number,
     order?: number,
@@ -59,7 +60,7 @@ export const useKanban = (dispatch: Dispatch<Action>) => {
         company,
         deadline,
         notes,
-        status,
+        priority,
         minSalary,
         maxSalary,
         order,
@@ -73,7 +74,7 @@ export const useKanban = (dispatch: Dispatch<Action>) => {
     company?: string,
     deadline?: Date,
     notes?: string,
-    status?: Status,
+    priority?: Priority,
     minSalary?: number,
     maxSalary?: number,
     order?: number,
@@ -86,7 +87,7 @@ export const useKanban = (dispatch: Dispatch<Action>) => {
         company,
         deadline,
         notes,
-        status,
+        priority,
         minSalary,
         maxSalary,
         order,

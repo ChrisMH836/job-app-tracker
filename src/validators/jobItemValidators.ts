@@ -1,14 +1,7 @@
 import z from 'zod';
 //columnId, company, title, deadline, notes
 
-export const jobStatusSchema = z.enum([
-  'SAVED',
-  'APPLIED',
-  'INTERVIEW',
-  'OFFERED',
-  'REJECTED',
-  'WITHDRAWN',
-]);
+export const jobStatusSchema = z.enum(['NONE', 'LOW', 'MEDIUM', 'HIGH']);
 
 export const createJobItemSchema = z.object({
   columnId: z.uuid(),
@@ -16,7 +9,7 @@ export const createJobItemSchema = z.object({
   title: z.string(),
   deadline: z.coerce.date().optional().nullable(),
   notes: z.string().optional().nullable(),
-  status: jobStatusSchema.default('SAVED'),
+  priority: jobStatusSchema.default('NONE'),
   order: z.coerce.number().int().optional(),
   minSalary: z.number(),
   maxSalary: z.number(),

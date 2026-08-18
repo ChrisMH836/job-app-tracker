@@ -26,7 +26,7 @@ const createJobItem = async (
       title,
       deadline,
       notes,
-      status,
+      priority,
       minSalary,
       maxSalary,
       order,
@@ -68,7 +68,7 @@ const createJobItem = async (
           title,
           deadline,
           notes,
-          status,
+          priority,
           order: targetOrder,
           minSalary,
           maxSalary,
@@ -177,17 +177,13 @@ const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
       company,
       title,
       deadline,
+      priority,
       notes,
       order,
       minSalary,
       maxSalary,
     } = req.body;
 
-    //find order of last column
-    const greatestOrder = await lastJobItemOrder(columnId);
-    //calculate order of new column
-    const targetOrder =
-      order && order <= greatestOrder + 1 ? order : greatestOrder + 1;
     //get jobItem with id param
     const jobItem = await prisma.jobItem.findUnique({
       where: {
@@ -195,33 +191,67 @@ const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
       },
       include: { column: true },
     });
+    console.log('jobItem: ', jobItem);
+    console.log('id: ', req.user.id);
     //check if jobItem exists
     if (!jobItem) {
       return res.status(404).json({
         error: 'job item not found',
       });
     }
+
     //check if user is authorized
     if (jobItem.column.userId !== req.user.id) {
       return res.status(403).json({
         error: 'Not authorized: invalid user',
       });
     }
+    // Determine the active destination column (default to current column if none provided)
+    const targetColumnId = columnId !== undefined ? columnId : jobItem.columnId;
+
+    // If we are changing columns, verify the target column belongs to the user
+    if (targetColumnId !== jobItem.columnId) {
+      const targetColumn = await prisma.column.findUnique({
+        where: { id: targetColumnId },
+      });
+
+      if (!targetColumn || targetColumn.userId !== req.user.id) {
+        return res.status(403).json({
+          error: 'Forbidden: target column not found or not owned by user',
+        });
+      }
+    }
+    //find order of last column
+    const greatestOrder = await lastJobItemOrder(targetColumnId);
+    //calculate order of new column
+    const targetOrder =
+      order !== undefined && order <= greatestOrder + 1
+        ? order
+        : greatestOrder + 1;
+
+    //If the jobItem is moved to a new column, set the original order to be at the end of the new column
+    const originalOrder =
+      targetColumnId !== jobItem.columnId ? greatestOrder + 1 : jobItem.order;
+
     const result = await prisma.$transaction(async (tx) => {
-      //check if order is updarted
-      if (order !== undefined && targetOrder !== jobItem.order) {
-        //set order to 'safe' negative value
+      const isMovingColumns = targetColumnId !== jobItem.columnId;
+      const isOrderChanged =
+        order !== undefined && targetOrder !== originalOrder;
+      //Check if column OR order is changing
+      if (isMovingColumns || isOrderChanged) {
+        //1. set order to 'safe' negative value
         await tx.jobItem.update({
           where: { id: jobItem.id },
-          data: { order: -1 },
+          data: { order: -1, columnId: targetColumnId },
         });
-        //reorder affected jobItems
-        const action: Action = order > jobItem.order ? 'INCREASE' : 'DECREASE';
+        //2. reorder affected jobItems
+        const action: Action =
+          targetOrder > jobItem.order ? 'INCREASE' : 'DECREASE';
         await reorderJobItems(
           {
-            originalOrder: jobItem.order,
-            targetOrder: targetOrder,
-            columnId: jobItem.columnId,
+            originalOrder,
+            targetOrder,
+            columnId: targetColumnId,
             tx,
           },
           action,
@@ -230,24 +260,25 @@ const updateJobItem = async (req: Request<{ id: string }>, res: Response) => {
       // edit job item
 
       const updateData: Prisma.JobItemUpdateInput = {};
-      if (columnId != undefined && columnId !== jobItem.columnId) {
-        updateData.column = { connect: { id: columnId } };
+      if (isMovingColumns) {
+        updateData.column = { connect: { id: targetColumnId } };
       }
 
       if (company != undefined) updateData.company = company;
       if (title != undefined) updateData.title = title;
       if (deadline != undefined) updateData.deadline = deadline;
       if (notes != undefined) updateData.notes = notes;
-      if (order != undefined) updateData.order = targetOrder;
+      updateData.order = targetOrder;
+      if (priority != undefined) updateData.priority = priority;
       if (minSalary != undefined) updateData.minSalary = minSalary;
       if (maxSalary != undefined) updateData.maxSalary = maxSalary;
 
-      //update jobItems
-      const updatedJobItem = await tx.jobItem.update({
+      //update jobItem
+      await tx.jobItem.update({
         where: { id: req.params.id },
         data: updateData,
       });
-
+      console.log(updateData);
       const newColumns = await tx.column.findMany({
         where: { userId: req.user?.id },
         orderBy: { order: 'asc' },
