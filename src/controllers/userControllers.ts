@@ -1,15 +1,14 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { prisma } from '../config/db';
 import { Prisma } from '../../generated/prisma';
 import bcrypt from 'bcrypt';
+import { AppError } from '../utils/errors';
 
-const updateMe = async (req: Request, res: Response) => {
+const updateMe = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // confirm that auth middleware inserted user
     if (!req.user?.id) {
-      return res.status(500).json({
-        error: 'internal error: user not found',
-      });
+      throw new AppError('internal error: user not found', 500);
     }
     //destructure body
     const { name, email } = req.body;
@@ -33,19 +32,19 @@ const updateMe = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'unknown error',
-    });
+    next(error);
   }
 };
 
-const updatePassword = async (req: Request, res: Response) => {
+const updatePassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     // confirm that auth middleware inserted user
     if (!req.user?.id) {
-      return res.status(500).json({
-        error: 'internal error: user not found',
-      });
+      throw new AppError('internal error: user not found', 500);
     }
     //destructure body
     const { password } = req.body;
@@ -64,18 +63,14 @@ const updatePassword = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'unknown error',
-    });
+    next(error);
   }
 };
 
-const deleteMe = async (req: Request, res: Response) => {
+const deleteMe = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user?.id) {
-      return res.status(500).json({
-        error: 'internal error: user not found',
-      });
+      throw new AppError('internal error: user not found', 500);
     }
     const deletedUser = await prisma.user.delete({
       where: { id: req.user.id },
@@ -88,16 +83,18 @@ const deleteMe = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'unknown error',
-    });
+    next(error);
   }
 };
 
-const getMe = async (req: Request, res: Response): Promise<void> => {
+const getMe = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     if (!req.user?.id) {
-      res.status(500).json({ error: 'internal error: user not found' });
+      throw new AppError('internal error: user not found', 500);
       return;
     }
 
@@ -108,9 +105,7 @@ const getMe = async (req: Request, res: Response): Promise<void> => {
       data: userWithoutPassword,
     });
   } catch (error) {
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'unknown error',
-    });
+    next(error);
   }
 };
 

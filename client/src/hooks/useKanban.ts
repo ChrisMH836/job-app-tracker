@@ -18,13 +18,6 @@ export const useKanban = (appState: AppState, dispatch: Dispatch<Action>) => {
     try {
       const columns = await apiCall();
       dispatch({ type: 'SET_COLUMNS', payload: { columns } });
-    } catch (error) {
-      dispatch({
-        type: 'SET_ERROR',
-        payload: {
-          error: error instanceof Error ? error.message : 'unknown error',
-        },
-      });
     } finally {
       dispatch({ type: 'SET_MUTATING', payload: false });
     }

@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import 'dotenv';
 import { prisma } from '../config/db';
 import { User } from '../../generated/prisma';
+import { AppError } from '../utils/errors';
 
 interface DecodedToken extends jwt.JwtPayload {
   id: string;
@@ -15,9 +16,8 @@ export const authMiddleware = async (
 ) => {
   console.log('auth middleware reached, body: ', req.body);
   if (!process.env.JWT_SECRET) {
-    return res.status(500).json({
-      error: 'JWT not configured',
-    });
+    console.log('JWT not configured');
+    throw new AppError('internal error: Please try again later', 500);
   }
   // check if token is passed
   let token;
@@ -28,9 +28,7 @@ export const authMiddleware = async (
     token = req.cookies.jwt;
   }
   if (!token) {
-    return res.status(401).json({
-      error: 'Not Authorized: No token provided',
-    });
+    throw new AppError('Not Authorized: No authorization token provided', 401);
   }
   //verify token
 
@@ -40,7 +38,7 @@ export const authMiddleware = async (
       where: { id: decoded.id },
     });
     if (!user) {
-      return res.status(401).json({ error: 'user does not exist anymore' });
+      throw new AppError('user does not exist anymore', 401);
     }
     //return userId
     req.user = user;

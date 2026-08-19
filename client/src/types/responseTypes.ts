@@ -30,7 +30,9 @@ export type FlatJobItemData = Prisma.JobItemGetPayload<object>;
 export type DeepJobItemData = Prisma.JobItemGetPayload<
   typeof getDeepJobItemArgs
 >;
-
+export type errorResponse = {
+  error: string;
+};
 //server response types
 export type GetUserResponse = {
   status: string;

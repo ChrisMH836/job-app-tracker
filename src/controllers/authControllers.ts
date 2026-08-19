@@ -1,9 +1,10 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { prisma } from '../config/db';
 import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/generatetoken';
+import { AppError } from '../utils/errors';
 
-const register = async (req: Request, res: Response) => {
+const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
     //destructure body
     const { email, password, name } = req.body;
@@ -14,9 +15,7 @@ const register = async (req: Request, res: Response) => {
       },
     });
     if (emailExists) {
-      return res
-        .status(409)
-        .json({ error: 'Account already exists with that email' });
+      throw new AppError('Account already exists with this email', 409);
     }
     //create user
     const saltRounds = 10;
@@ -28,6 +27,7 @@ const register = async (req: Request, res: Response) => {
         name,
       },
     });
+
     //return success response
     res.status(201).json({
       status: 'Success',
@@ -40,13 +40,11 @@ const register = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'unknown error',
-    });
+    next(error);
   }
 };
 
-const login = async (req: Request, res: Response) => {
+const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // destructure body
     const { email, password } = req.body;
@@ -59,16 +57,12 @@ const login = async (req: Request, res: Response) => {
       },
     });
     if (!user) {
-      return res.status(402).json({
-        error: 'invalid email or password',
-      });
+      throw new AppError('Invalid Email or password', 401);
     }
     //check if password hashes are the same
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(403).json({
-        error: 'invalid email or password',
-      });
+      throw new AppError('Invalid Email or password', 401);
     }
     //generate jwt token
     const token = generateToken(user.id, res);
@@ -90,12 +84,10 @@ const login = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'unknown error',
-    });
+    next(error);
   }
 };
-const logout = async (req: Request, res: Response) => {
+const logout = async (req: Request, res: Response, next: NextFunction) => {
   try {
     {
       res.cookie('jwt', '', {
@@ -108,9 +100,7 @@ const logout = async (req: Request, res: Response) => {
       });
     }
   } catch (error) {
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'unknown error',
-    });
+    next(error);
   }
 };
 export { register, login, logout };

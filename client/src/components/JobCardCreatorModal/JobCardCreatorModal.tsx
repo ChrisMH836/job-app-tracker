@@ -74,7 +74,9 @@ const JobCardCreatorModal = ({
     } catch (err) {
       dispatch({
         type: 'SET_ERROR',
-        payload: { error: 'Error: unable to create Application' },
+        payload: {
+          error: `Unable to create Application: ${err instanceof Error ? err.message : 'unknown error'}`,
+        },
       });
     } finally {
       dispatch({ type: 'CLOSE_MODAL' });

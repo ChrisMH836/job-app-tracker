@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { ZodType, z } from 'zod';
+import { AppError } from '../utils/errors';
 
 export const validateRequest = (schema: ZodType) => {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -13,9 +14,7 @@ export const validateRequest = (schema: ZodType) => {
       const flattened = z.flattenError(result.error);
 
       const errorMessages = Object.values(flattened.fieldErrors).flat();
-      return res.status(400).json({
-        error: errorMessages.join(', '),
-      });
+      throw new AppError(errorMessages.join(', '), 400);
     }
     req.body = result.data;
     console.log('end of validate request');
@@ -29,7 +28,8 @@ export const validateParams = (schema: ZodType) => {
     const result = schema.safeParse(req.params);
     if (!result.success) {
       const flattened = z.flattenError(result.error);
-      return res.status(400).json({ error: flattened });
+      const errorMessages = Object.values(flattened.fieldErrors).flat();
+      throw new AppError(errorMessages.join(', '), 400);
     }
     next();
   };

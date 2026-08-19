@@ -1,17 +1,20 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { prisma } from '../config/db';
 import { lastColumnOrder } from '../utils/dataUtils';
 import { Column, Prisma } from '../../generated/prisma';
 import { reorderColumns } from '../utils/columnUtils';
 import { Action } from '../utils/types';
+import { AppError } from '../utils/errors';
 
-const createColumn = async (req: Request, res: Response) => {
+const createColumn = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     // confirm that auth middleware inserted user
     if (!req.user?.id) {
-      return res.status(500).json({
-        error: 'internal error: user not found',
-      });
+      throw new AppError('internal error: user not found', 500);
     }
     //destructure request
     const userId = req.user.id;
@@ -53,20 +56,21 @@ const createColumn = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error) {
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'unknown error',
-    });
+    next(error);
   }
 };
 
-const removeColumn = async (req: Request<{ id: string }>, res: Response) => {
+const removeColumn = async (
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     // confirm that auth middleware inserted user
     if (!req.user?.id) {
-      return res.status(500).json({
-        error: 'internal error: user not found',
-      });
+      throw new AppError('internal error: user not found', 500);
     }
+
     // get column from id param
     const column = await prisma.column.findUnique({
       where: {
@@ -118,19 +122,19 @@ const removeColumn = async (req: Request<{ id: string }>, res: Response) => {
       data: result,
     });
   } catch (error) {
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'unknown error',
-    });
+    next(error);
   }
 };
 
-const updateColumn = async (req: Request<{ id: string }>, res: Response) => {
+const updateColumn = async (
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     // confirm that auth middleware inserted user
     if (!req.user?.id) {
-      return res.status(500).json({
-        error: 'internal error: user not found',
-      });
+      throw new AppError('internal error: user not found', 500);
     }
     const userId = req.user.id;
     //destructure body
@@ -148,15 +152,11 @@ const updateColumn = async (req: Request<{ id: string }>, res: Response) => {
     });
     //check if Column exists
     if (!column) {
-      return res.status(404).json({
-        error: 'Column not found',
-      });
+      throw new AppError('Column not found', 404);
     }
     //check if user is authorized
     if (column.userId !== userId) {
-      return res.status(403).json({
-        error: 'Not authorized: invalid user',
-      });
+      throw new AppError('Not authorized: invalid user', 403);
     }
     // edit job item
     const result = await prisma.$transaction(async (tx) => {
@@ -210,18 +210,14 @@ const updateColumn = async (req: Request<{ id: string }>, res: Response) => {
       data: result,
     });
   } catch (error) {
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'unknown error',
-    });
+    next(error);
   }
 };
 
-const getColumns = async (req: Request, res: Response) => {
+const getColumns = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user?.id) {
-      return res.status(500).json({
-        error: 'internal error: user not found',
-      });
+      throw new AppError('internal error: user not found', 500);
     }
     const columns = await prisma.column.findMany({
       where: { userId: req.user.id },
@@ -236,19 +232,17 @@ const getColumns = async (req: Request, res: Response) => {
     });
     res.status(200).json({ status: 'success', data: columns });
   } catch (error) {
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'unknown error',
-    });
+    next(error);
   }
 };
 const getColumn = async (
   req: Request<{ id: string }>,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     if (!req.user?.id) {
-      res.status(500).json({ error: 'internal error: user not found' });
-      return;
+      throw new AppError('internal error: user not found', 500);
     }
 
     const column = await prisma.column.findUnique({
@@ -262,20 +256,16 @@ const getColumn = async (
     });
 
     if (!column) {
-      res.status(404).json({ error: 'column not found' });
-      return;
+      throw new AppError('column not found', 404);
     }
 
     if (column.userId !== req.user.id) {
-      res.status(403).json({ error: 'not authorized' });
-      return;
+      throw new AppError('not authorized', 403);
     }
 
     res.status(200).json({ status: 'success', data: column });
   } catch (error) {
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'unknown error',
-    });
+    next(error);
   }
 };
 export { createColumn, removeColumn, updateColumn, getColumns, getColumn };

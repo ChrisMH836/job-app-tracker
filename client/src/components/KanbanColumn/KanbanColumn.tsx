@@ -7,11 +7,14 @@ interface KanbanColumnProps {
   column: Column;
   dispatch: React.ActionDispatch<[action: Action]>;
   removeColumn: (id: string) => Promise<void>;
+
+  removeJobItem: (id: string) => Promise<void>;
 }
 
 const KanbanColumn = ({
   column,
   removeColumn,
+  removeJobItem,
   dispatch,
 }: KanbanColumnProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -22,7 +25,9 @@ const KanbanColumn = ({
     } catch (err) {
       dispatch({
         type: 'SET_ERROR',
-        payload: { error: 'Unable to Remove Column' },
+        payload: {
+          error: `Unable to Remove Column: ${err instanceof Error ? err.message : 'unknown error'}`,
+        },
       });
     } finally {
       setIsLoading(false);
@@ -32,6 +37,7 @@ const KanbanColumn = ({
     <div className="column w-90 bg-zinc-400 border aspect-2/3 shrink-0  ">
       {isLoading && <h1 className="flex justify-center">loading...</h1>}
       <div className="column-name border-b text-center font-bold relative flex justify-center items-center ">
+        <button className="mr-2">&#9998;</button>
         {column.name.toUpperCase()}{' '}
         <span className="jobCount">({column.jobCount})</span>
         <button
@@ -43,7 +49,12 @@ const KanbanColumn = ({
       </div>
       <div className="job-section p-2 flex flex-col gap-2 shrink-0 overflow-y-auto">
         {column.jobItems.map((item) => (
-          <JobCard jobItem={item} key={item.id} />
+          <JobCard
+            jobItem={item}
+            key={item.id}
+            removeJobItem={removeJobItem}
+            dispatch={dispatch}
+          />
         ))}
       </div>
     </div>

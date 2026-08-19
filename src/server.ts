@@ -10,6 +10,7 @@ import authRoutes from './routes/authRoutes';
 import jobItemRoutes from './routes/jobItemRoutes';
 import columnRoutes from './routes/columnRoutes';
 import userRoutes from './routes/userRoutes';
+import { errorHandler } from './middlewares/errorHandler';
 
 config();
 connectDB();
@@ -29,6 +30,7 @@ app.use('/auth', authRoutes);
 app.use('/job', jobItemRoutes);
 app.use('/column', columnRoutes);
 app.use('/user', userRoutes);
+app.use(errorHandler);
 
 const PORT: number = 5001;
 

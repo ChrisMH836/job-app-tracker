@@ -40,6 +40,13 @@ const mapColumns = (columnsData: DeepColumnData[]): Column[] => {
   );
 };
 
+const handleResponse = async (response: Response) => {
+  if (!response.ok) {
+    const json = await response.json();
+    throw new Error(json.error || 'Something went wrong');
+  }
+  return response.json();
+};
 export const fetchColumns = async (): Promise<Column[]> => {
   const response = await fetch(`${serverURL}/column`, {
     credentials: 'include',
@@ -47,9 +54,8 @@ export const fetchColumns = async (): Promise<Column[]> => {
       'Content-Type': 'application/json',
     },
   });
-  if (!response.ok) throw new Error('An error occured. Please try again');
-
-  const { data: columnsData }: GetDeepColumnsResponse = await response.json();
+  const { data: columnsData }: GetDeepColumnsResponse =
+    await handleResponse(response);
 
   const columns: Column[] = mapColumns(columnsData);
   return columns;
@@ -59,9 +65,8 @@ export const fetchMe = async (): Promise<User> => {
   const response = await fetch(`${serverURL}/user/me`, {
     credentials: 'include',
   });
-  if (!response.ok) throw new Error(`API error: ${response.status}`);
 
-  const { data: userData }: GetUserResponse = await response.json();
+  const { data: userData }: GetUserResponse = await handleResponse(response);
 
   const user = {
     id: userData.id,
@@ -83,9 +88,9 @@ export const createColumnApi = async (
     },
     body: JSON.stringify({ name, ...(order !== undefined && { order }) }),
   });
-  if (!response.ok) throw new Error('Unable to create column');
 
-  const { data: columnsData }: GetDeepColumnsResponse = await response.json();
+  const { data: columnsData }: GetDeepColumnsResponse =
+    await handleResponse(response);
 
   const columns: Column[] = mapColumns(columnsData);
   return columns;
@@ -107,9 +112,9 @@ export const updateColumnApi = async (
       ...(order !== undefined && { order }),
     }),
   });
-  if (!response.ok) throw new Error('Unable to create column');
 
-  const { data: columnsData }: GetDeepColumnsResponse = await response.json();
+  const { data: columnsData }: GetDeepColumnsResponse =
+    await handleResponse(response);
 
   const columns: Column[] = mapColumns(columnsData);
   return columns;
@@ -120,8 +125,9 @@ export const removeColumnApi = async (id: string): Promise<Column[]> => {
     credentials: 'include',
     method: 'DELETE',
   });
-  if (!response.ok) throw new Error('Unable to remove column');
-  const { data: columnsData }: GetDeepColumnsResponse = await response.json();
+
+  const { data: columnsData }: GetDeepColumnsResponse =
+    await handleResponse(response);
 
   const columns: Column[] = mapColumns(columnsData);
   return columns;
@@ -156,8 +162,9 @@ export const createJobItemApi = async (
       ...(order !== undefined && { order }),
     }),
   });
-  if (!response.ok) throw new Error('Unable to create job item');
-  const { data: columnsData }: GetDeepColumnsResponse = await response.json();
+
+  const { data: columnsData }: GetDeepColumnsResponse =
+    await handleResponse(response);
 
   const columns: Column[] = mapColumns(columnsData);
   return columns;
@@ -193,9 +200,9 @@ export const updateJobItemApi = async (
       ...(order !== undefined && { order }),
     }),
   });
-  if (!response.ok) throw new Error('Unable to update job item');
 
-  const { data: columnsData }: GetDeepColumnsResponse = await response.json();
+  const { data: columnsData }: GetDeepColumnsResponse =
+    await handleResponse(response);
 
   const columns: Column[] = mapColumns(columnsData);
   return columns;
@@ -209,9 +216,9 @@ export const removeJobItemApi = async (id: string): Promise<Column[]> => {
       'Content-type': 'application/json',
     },
   });
-  if (!response.ok) throw new Error('Unable to remove job item');
-  const { data: columnsData }: GetDeepColumnsResponse = await response.json();
 
+  const { data: columnsData }: GetDeepColumnsResponse =
+    await handleResponse(response);
   const columns: Column[] = mapColumns(columnsData);
   return columns;
 };

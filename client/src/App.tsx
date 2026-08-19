@@ -46,21 +46,33 @@ const App = () => {
   return (
     <div>
       {appState.user && <Header user={appState.user} dispatch={dispatch} />}
-      {appState.columns && (
-        <main className="px-3">
-          <div className="column-section w-full mt-5 px-5 bg-zinc-300 flex gap-2 overflow-x-auto">
-            {appState.columns.map((column) => (
-              <KanbanColumn
-                removeColumn={removeColumn}
-                column={column}
-                key={column.id}
+      <main className="px-3">
+        <div className="column-section w-full mt-5 px-5 bg-zinc-300 flex gap-2 overflow-x-auto">
+          {appState.isLoading && <h1>loading...</h1>}
+
+          {appState.error && (
+            <h1 className="text-red-500 font-bold">{appState.error}</h1>
+          )}
+
+          {!appState.isLoading && !appState.error && appState.columns && (
+            <>
+              {appState.columns.map((column) => (
+                <KanbanColumn
+                  removeColumn={removeColumn}
+                  removeJobItem={removeJobItem}
+                  column={column}
+                  key={column.id}
+                  dispatch={dispatch}
+                />
+              ))}
+              <ColumnCreatorForm
+                createColumn={createColumn}
                 dispatch={dispatch}
               />
-            ))}
-            <ColumnCreatorForm createColumn={createColumn} />
-          </div>
-        </main>
-      )}
+            </>
+          )}
+        </div>
+      </main>
       {appState.isModalOpen && (
         <JobCardCreatorModal
           appState={appState}
