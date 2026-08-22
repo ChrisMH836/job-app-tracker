@@ -63,6 +63,7 @@ const App = () => {
                   column={column}
                   key={column.id}
                   dispatch={dispatch}
+                  updateColumn={updateColumn}
                 />
               ))}
               <ColumnCreatorForm
