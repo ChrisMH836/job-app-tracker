@@ -1,15 +1,21 @@
 import { useState } from 'react';
 import type { Action } from '../../reducer';
 import type { JobItem } from '../../types/stateTypes';
+import { useAppContext } from '../../context/AppContext';
+import { useKanban } from '../../hooks/useKanban';
 
 interface JobCardProps {
   jobItem: JobItem;
-  removeJobItem: (id: string) => Promise<void>;
   dispatch: React.ActionDispatch<[action: Action]>;
 }
 
-const JobCard = ({ jobItem, removeJobItem, dispatch }: JobCardProps) => {
+const JobCard = ({ jobItem, }: JobCardProps) => {
+  //local state and context
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const {appState, dispatch} = useAppContext();
+  const {removeJobItem} = useKanban(appState, dispatch)
+
+
   const handleRemoveJobItem = async (id: string) => {
     setIsLoading(true);
     try {

@@ -1,32 +1,26 @@
 import { useState } from 'react';
-import type { Action } from '../../reducer';
+
 import type { Column } from '../../types/stateTypes';
 import JobCard from '../JobCard/JobCard';
+import { useAppContext } from '../../context/AppContext';
+import { useKanban } from '../../hooks/useKanban';
 
 interface KanbanColumnProps {
   column: Column;
-  dispatch: React.ActionDispatch<[action: Action]>;
-  removeColumn: (id: string) => Promise<void>;
-  updateColumn: (
-    columnId: string,
-    name?: string,
-    order?: number,
-  ) => Promise<void>;
-
-  removeJobItem: (id: string) => Promise<void>;
 }
 
 const KanbanColumn = ({
   column,
-  removeColumn,
-  removeJobItem,
-  updateColumn,
-  dispatch,
 }: KanbanColumnProps) => {
+  //local states and context
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [nameInput, setNameInput] = useState<string>(column.name);
+  const {appState, dispatch} = useAppContext();
+
+  const {removeColumn, updateColumn} = useKanban(appState, dispatch);
+
   const handleRemoveColumn = async (id: string) => {
     setIsLoading(true);
     try {
@@ -116,7 +110,6 @@ const KanbanColumn = ({
           <JobCard
             jobItem={item}
             key={item.id}
-            removeJobItem={removeJobItem}
             dispatch={dispatch}
           />
         ))}

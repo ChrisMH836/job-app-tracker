@@ -1,17 +1,19 @@
 import { useRef, useState } from 'react';
-import type { Action } from '../../reducer';
 
-interface ColumnCreatorFormProps {
-  createColumn: (name: string, order?: number) => Promise<void>;
-  dispatch: React.ActionDispatch<[action: Action]>;
-}
+import { useAppContext } from '../../context/AppContext';
+import { useKanban } from '../../hooks/useKanban';
 
-const ColumnCreatorForm = ({
-  dispatch,
-  createColumn,
-}: ColumnCreatorFormProps) => {
+
+const ColumnCreatorForm = () => {
+
+  //local states and context
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const {appState, dispatch} = useAppContext();
+
+  const {createColumn} = useKanban(appState, dispatch);
+
+
   const handleCreateColumn = async (e: React.SubmitEvent<HTMLFormElement>) => {
     //prevent apge refresh
     e.preventDefault();

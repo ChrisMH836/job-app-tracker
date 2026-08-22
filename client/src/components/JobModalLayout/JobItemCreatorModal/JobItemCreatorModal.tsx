@@ -1,29 +1,21 @@
 import { useRef, useState } from 'react';
-import type { AppState } from '../../types/stateTypes';
-import type { Priority } from '../../types/stateTypes';
-import type { Action } from '../../reducer';
-
-interface JobCardCreatorModalProps {
+import type { AppState } from '../../../types/stateTypes';
+import type { Priority } from '../../../types/stateTypes';
+import type { Action } from '../../../reducer';
+import { useKanban } from '../../../hooks/useKanban';
+interface JobItemCreatorModalProps {
   appState: AppState;
-  createJobItem: (
-    columnId: string,
-    title: string,
-    company: string,
-    deadline?: Date,
-    notes?: string,
-    priority?: Priority,
-    minSalary?: number,
-    maxSalary?: number,
 
-    order?: number,
-  ) => Promise<void>;
-  dispatch: React.ActionDispatch<[action: Action]>;
+   dispatch: React.ActionDispatch<[action: Action]>;
 }
-const JobCardCreatorModal = ({
+const JobItemCreatorModal = ({
   appState,
-  createJobItem,
+
   dispatch,
-}: JobCardCreatorModalProps) => {
+}: JobItemCreatorModalProps) => {
+  //function imports
+  const {createJobItem} = useKanban(appState, dispatch);
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [salaryHasRange, setSalaryHasRange] = useState<boolean>(false);
@@ -51,7 +43,7 @@ const JobCardCreatorModal = ({
     const deadline = deadlineRef.current?.valueAsDate;
     const priority = priorityRef.current?.value as Priority | undefined;
     const minSalary = Number(minSalaryRef.current?.value);
-    const maxSalary = Number(minSalaryRef.current?.value);
+    const maxSalary = Number(maxSalaryRef.current?.value);
     const columnId = columnRef.current?.value;
     const notes = notesRef.current?.value;
 
@@ -232,4 +224,4 @@ const JobCardCreatorModal = ({
   );
 };
 
-export default JobCardCreatorModal;
+export default JobItemCreatorModal;

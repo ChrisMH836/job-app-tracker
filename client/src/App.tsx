@@ -4,20 +4,14 @@ import { fetchColumns, fetchMe } from './api';
 import Header from './components/Header/Header';
 import { useNavigate } from 'react-router';
 import KanbanColumn from './components/KanbanColumn/KanbanColumn';
-import { useKanban } from './hooks/useKanban';
+
 import ColumnCreatorForm from './components/ColumnCreatorForm/ColumnCreatorForm';
-import JobCardCreatorModal from './components/JobCardCreatorModal/JobCardCreatorModal';
+import JobItemCreatorModal from './components/JobModalLayout/JobItemCreatorModal/JobItemCreatorModal';
+import { AppContext } from './context/AppContext';
 
 const App = () => {
   const [appState, dispatch] = useReducer(reducer, initialState);
-  const {
-    createColumn,
-    createJobItem,
-    removeColumn,
-    removeJobItem,
-    updateColumn,
-    updateJobItem,
-  } = useKanban(appState, dispatch);
+  
 
   const navigate = useNavigate();
 
@@ -44,44 +38,44 @@ const App = () => {
   }, [navigate]);
 
   return (
-    <div>
+    <AppContext.Provider value = {{appState, dispatch}}>
+
+    
+    <div className="flex flex-col ">
       {appState.user && <Header user={appState.user} dispatch={dispatch} />}
       <main className="px-3">
         <div className="column-section w-full mt-5 px-5 bg-zinc-300 flex gap-2 overflow-x-auto">
-          {appState.isLoading && <h1>loading...</h1>}
 
-          {appState.error && (
-            <h1 className="text-red-500 font-bold">{appState.error}</h1>
-          )}
+          
 
-          {!appState.isLoading && !appState.error && appState.columns && (
+          {appState.columns && (
             <>
               {appState.columns.map((column) => (
                 <KanbanColumn
-                  removeColumn={removeColumn}
-                  removeJobItem={removeJobItem}
+               
                   column={column}
                   key={column.id}
-                  dispatch={dispatch}
-                  updateColumn={updateColumn}
                 />
               ))}
               <ColumnCreatorForm
-                createColumn={createColumn}
-                dispatch={dispatch}
+            
               />
             </>
           )}
         </div>
       </main>
       {appState.isModalOpen && (
-        <JobCardCreatorModal
+        <JobItemCreatorModal
           appState={appState}
-          createJobItem={createJobItem}
           dispatch={dispatch}
         />
       )}
+      {appState.isLoading && <h1 className="font-bold self-center">loading...</h1>}
+      {appState.error && (
+            <h1 className="text-red-500 font-bold">{appState.error}</h1>
+          )}
     </div>
+    </AppContext.Provider>
   );
 };
 
